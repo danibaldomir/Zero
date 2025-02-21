@@ -1,20 +1,25 @@
 import { Metadata } from "next";
 
 const TITLE = "0 Email";
-const DESCRIPTION = "An Open Source Gmail Alternative.";
+const DESCRIPTION =
+  "Email, reimagined. Chat with your inbox using a modern, open source, and secure platform that puts you in control.";
 
-const BASE_URL = "https://mail0.io";
+const BASE_URL = "https://0.email";
 
 export const siteConfig: Metadata = {
-  title: TITLE,
+  title: {
+    template: TITLE,
+    default: TITLE,
+    absolute: TITLE,
+  },
   description: DESCRIPTION,
   icons: {
     icon: "/favicon.ico",
   },
   applicationName: "0 Email",
-  creator: "Open Source Developers",
+  creator: "0 Email Team and Open Source contributors",
 
-  category: "AU",
+  category: "Productivity",
   alternates: {
     canonical: BASE_URL,
   },
