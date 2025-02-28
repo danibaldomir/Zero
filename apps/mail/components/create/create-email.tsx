@@ -152,7 +152,7 @@ export function CreateEmail() {
 
       <div className="relative flex h-full flex-col">
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[500px] space-y-12 px-4 pt-4 md:px-2">
+          <div className="mx-auto w-full space-y-12 px-4 pt-4 md:px-2">
             <div className="space-y-3 md:px-1">
               <div className="flex items-center pb-2">
                 <div className="text-muted-foreground w-24 flex-shrink-0 pr-3 text-right text-[1rem] font-[600] opacity-50">
