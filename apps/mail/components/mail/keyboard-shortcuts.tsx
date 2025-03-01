@@ -19,13 +19,5 @@ export const KeyboardShortcuts = () => {
     });
   }
 
-  useHotKey("Meta+0", () => {
-    toggleOpen();
-  });
-
-  useHotKey("Control+0", () => {
-    toggleOpen();
-  });
-
   return null;
 };
