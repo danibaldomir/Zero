@@ -10,7 +10,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSession } from "@/lib/auth-client";
 import React, { useMemo, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { EnableBrain } from "@/actions/brain";
 import { useRouter } from "next/navigation";
 import { useAISidebar } from "./ai-sidebar";
 import { mailCount } from "@/actions/mail";
@@ -80,18 +79,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </motion.div>
             )}
           </AnimatePresence>
-          <Button
-            onClick={async () => {
-              toast.promise(EnableBrain(), {
-                loading: "Enabling brain... takes around 8 seconds...",
-                success: "Enabled successfully!",
-                error: "Enable brain failed",
-              });
-            }}
-            className="bg-secondary bg-subtleWhite text-primary hover:bg-subtleWhite dark:bg-subtleBlack dark:hover:bg-subtleBlack relative isolate h-8 w-[calc(100%)] overflow-hidden whitespace-nowrap shadow-inner"
-          >
-            <Brain />
-          </Button>
         </SidebarHeader>
         <SidebarContent className="py-0 pt-0">
           <AnimatePresence mode="wait">
@@ -110,24 +97,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </div>
 
       <div
-        className="mb-4 ml-1.5 mt-auto cursor-pointer pl-1.5"
+        className="mb-4 ml-2 mt-auto cursor-pointer pl-1.5"
         onClick={toggleAISidebar}
         title="Open AI Assistant (Cmd+S)"
       >
-        <Image
-          src="/black-icon.svg"
-          alt="Mail0 Logo"
-          width={28}
-          height={28}
-          className="dark:hidden"
-        />
-        <Image
-          src="/white-icon.svg"
-          alt="Mail0 Logo"
-          width={28}
-          height={28}
-          className="hidden dark:block"
-        />
+        <div className="">
+          <Image
+            src="/white-icon.svg"
+            alt="Mail0 Logo"
+            width={28}
+            height={28}
+            className="hidden dark:block transition-transform duration-300 hover:rotate-90"
+          />
+          <Image
+            src="/black-icon.svg"
+            alt="Mail0 Logo"
+            width={28}
+            height={28}
+            className="dark:hidden transition-transform duration-300 hover:rotate-90"
+          />
+        </div>
       </div>
     </Sidebar>
   );
