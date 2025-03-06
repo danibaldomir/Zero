@@ -32,6 +32,7 @@ export function ExtensionPoint({ location, data }: ExtensionPointProps) {
               data-extension-index={index}
             >
               {cloneElement(element, {
+                // @ts-ignore
                 data,
                 key: `${location}-${index}`,
                 "data-extension": "true",
