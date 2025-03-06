@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { Suspense } from "react";
 import AISidebar from "@/components/ui/ai-sidebar";
+import { ExtensionPoint } from "@/components/plugin/extension-point";
+import { EXTENSION_POINTS } from "@/constants/extension-points";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -49,9 +51,15 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
               <div className="md:shadow-s flex-1 flex-col overflow-y-auto bg-offsetLight shadow-inner dark:bg-offsetDark md:flex md:rounded-2xl md:border">
                 <div className="sticky top-0 z-10 flex items-center justify-between gap-1.5 p-2 border-b">
                   <SidebarToggle className="h-fit px-2" />
+                  <ExtensionPoint location={EXTENSION_POINTS.SETTINGS.SIDEBAR} />
                 </div>
                 <ScrollArea className="h-[calc(100dvh-56px)] p-2 pt-0 md:h-[calc(100dvh-(8px+8px+14px+44px))]">
-                  <div className="p-2 md:p-3 md:pt-5">{children}</div>
+                  <ExtensionPoint location={EXTENSION_POINTS.SETTINGS.INTEGRATIONS} />
+                  <div className="p-2 md:p-3 md:pt-5">
+                    <ExtensionPoint location={EXTENSION_POINTS.SETTINGS.GENERAL} />
+                    {children}
+                    <ExtensionPoint location={EXTENSION_POINTS.SETTINGS.PLUGINS} />
+                  </div>
                 </ScrollArea>
               </div>
             </ResizablePanel>

@@ -1,27 +1,29 @@
 "use client";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertTriangle, Tag, User, Bell, Briefcase, Users } from "lucide-react";
 import { EmptyState, type FolderType } from "@/components/mail/empty-state";
+import { ExtensionPoint } from "@/components/plugin/extension-point";
+import { EXTENSION_POINTS } from "@/constants/extension-points";
 import { preloadThread, useThreads } from "@/hooks/use-threads";
+import { ThreadContextMenu } from "../context/thread-context";
+import { cn, defaultPageSize, formatDate } from "@/lib/utils";
 import { useSearchValue } from "@/hooks/use-search-value";
 import { markAsRead, markAsUnread } from "@/actions/mail";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useMail } from "@/components/mail/use-mail";
+import { useSummary } from "@/hooks/use-summary";
 import { useHotKey } from "@/hooks/use-hot-key";
 import { useSession } from "@/lib/auth-client";
 import { Badge } from "@/components/ui/badge";
-import { cn, defaultPageSize, formatDate } from "@/lib/utils";
+import { useParams } from "next/navigation";
 import { InitialThread } from "@/types";
 import { useTheme } from "next-themes";
+import items from "./demo.json";
 import Image from "next/image";
 import { toast } from "sonner";
-import { ThreadContextMenu } from "../context/thread-context";
-import { useParams } from "next/navigation";
-import { useSummary } from "@/hooks/use-summary";
-import { AlertTriangle, Tag, User, Bell, Briefcase, Users } from "lucide-react";
-import items from './demo.json'
 
 interface MailListProps {
   isCompact?: boolean;
@@ -128,6 +130,7 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
         // isCompact && "py-2",
       )}
     >
+      <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.LIST_ITEM} data={{ message }} />
       <div
         className={cn(
           "bg-primary absolute inset-y-0 left-0 w-1 -translate-x-2 transition-transform ease-out",
@@ -145,15 +148,14 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
             <span className={cn(mail.selected && "max-w-[120px] truncate")}>
               {highlightText(message.sender.name, searchValue.highlight)}
             </span>{" "}
-            {message.unread ? (
-              <span className=" size-2 rounded-full bg-[#006FFE]" />
-            ) : null}
-
+            {message.unread ? <span className="size-2 rounded-full bg-[#006FFE]" /> : null}
           </p>
           <MailLabels labels={message.tags} />
           {message.totalReplies !== 1 ? (
-              <span className="text-xs opacity-70 border border-dotted rounded-full px-[5px] py-[1px]">{message.totalReplies}</span>
-            ) : null}
+            <span className="rounded-full border border-dotted px-[5px] py-[1px] text-xs opacity-70">
+              {message.totalReplies}
+            </span>
+          ) : null}
         </div>
         {message.receivedOn ? (
           <p
@@ -168,7 +170,7 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
       </div>
       <p
         className={cn(
-          "mt-1 text-xs opacity-70 transition-opacity line-clamp-1",
+          "mt-1 line-clamp-1 text-xs opacity-70 transition-opacity",
           mail.selected ? "line-clamp-1" : "line-clamp-2",
           isMailSelected && "opacity-100",
         )}
@@ -180,41 +182,33 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
 };
 
 export function MailListDemo() {
-  return <ScrollArea
-    className="h-full pb-2"
-    type="scroll"
-  >
-    <div
-      className={cn(
-        "relative min-h-[calc(100vh-4rem)] w-full",
-
-      )}
-    >
-      <div
-        className="absolute left-0 top-0 w-full p-[8px]"
-      >
-        {items.map((item) => {
-          return item ? (
-            <Thread
-              demo
-              key={item.id}
-              message={item}
-              selectMode={'single'}
-            />
-          ) : null;
-        })}
+  return (
+    <ScrollArea className="h-full pb-2" type="scroll">
+      <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.BEFORE_LIST} />
+      <div className={cn("relative min-h-[calc(100vh-4rem)] w-full")}>
+        <div className="absolute left-0 top-0 w-full p-[8px]">
+          {items.map((item) => {
+            return item ? <Thread demo key={item.id} message={item} selectMode={"single"} /> : null;
+          })}
+        </div>
       </div>
-    </div>
-  </ScrollArea>
+    </ScrollArea>
+  );
 }
 
 export function MailList({ isCompact }: MailListProps) {
-  const { folder } = useParams<{ folder: string }>()
+  const { folder } = useParams<{ folder: string }>();
   const [mail, setMail] = useMail();
   const { data: session } = useSession();
   const [searchValue] = useSearchValue();
 
-  const { data: { threads: items, nextPageToken }, mutate, isValidating, isLoading, loadMore } = useThreads(folder, undefined, searchValue.value, defaultPageSize);
+  const {
+    data: { threads: items, nextPageToken },
+    mutate,
+    isValidating,
+    isLoading,
+    loadMore,
+  } = useThreads(folder, undefined, searchValue.value, defaultPageSize);
 
   const parentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -238,7 +232,7 @@ export function MailList({ isCompact }: MailListProps) {
 
       if (scrolledToBottom) {
         console.log("Loading more items...");
-        await loadMore()
+        await loadMore();
       }
     },
     [isLoading, isValidating, nextPageToken, itemHeight],
@@ -479,7 +473,9 @@ export function MailList({ isCompact }: MailListProps) {
       });
     }
     if (message.unread) {
-      return markAsRead({ ids: [message.id] }).then(() => mutate() as any).catch(console.error);
+      return markAsRead({ ids: [message.id] })
+        .then(() => mutate() as any)
+        .catch(console.error);
     }
   };
 
@@ -508,22 +504,27 @@ export function MailList({ isCompact }: MailListProps) {
         )}
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          willChange: "transform", contain: 'paint'
+          willChange: "transform",
+          contain: "paint",
         }}
       >
         <div
-          style={{ transform: `translateY(${virtualItems[0]?.start ?? 0}px)`, willChange: "transform", contain: 'paint' }}
+          style={{
+            transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+            willChange: "transform",
+            contain: "paint",
+          }}
           className="absolute left-0 top-0 w-full p-[8px]"
         >
           {virtualItems.map(({ index, key }) => {
             const item = items[index];
             return item ? (
-                  <Thread
+              <Thread
                 key={item.id}
                 onClick={handleMailClick}
-                    message={item}
+                message={item}
                 selectMode={selectMode}
-                    isCompact={isCompact}
+                isCompact={isCompact}
               />
             ) : null;
           })}
@@ -557,7 +558,7 @@ function MailLabels({ labels }: { labels: string[] }) {
         const style = getDefaultBadgeStyle(label);
         // Skip rendering if style is "secondary" (default case)
         if (style === "secondary") return null;
-        
+
         return (
           <Badge key={label} className="rounded-full p-1" variant={style}>
             {getLabelIcon(label)}
