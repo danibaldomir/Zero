@@ -1,4 +1,5 @@
 import { Plugin, PluginHook, UIExtensionPoint, EmailDriver, AuthProvider } from '../types/plugin';
+import { getPluginSettings, setPluginSettings } from '@/actions/plugin-settings';
 
 class PluginManager {
   private static instance: PluginManager;
@@ -7,7 +8,7 @@ class PluginManager {
   private uiExtensions: Map<string, UIExtensionPoint[]>;
   private emailDrivers: Map<string, EmailDriver>;
   private authProviders: Map<string, AuthProvider>;
-  private disabledPlugins: Set<string>;
+  private enabledStates: Map<string, boolean>;
 
   private constructor() {
     this.plugins = new Map();
@@ -15,7 +16,7 @@ class PluginManager {
     this.uiExtensions = new Map();
     this.emailDrivers = new Map();
     this.authProviders = new Map();
-    this.disabledPlugins = new Set(this.loadDisabledPlugins());
+    this.enabledStates = new Map();
   }
 
   public static getInstance(): PluginManager {
@@ -33,8 +34,12 @@ class PluginManager {
     // Register the plugin
     this.plugins.set(plugin.metadata.id, plugin);
 
+    // Load plugin state from server action
+    const enabled = await getPluginSettings(plugin.metadata.id);
+    this.enabledStates.set(plugin.metadata.id, enabled);
+
     // Only register extensions if the plugin is enabled
-    if (!this.disabledPlugins.has(plugin.metadata.id)) {
+    if (enabled) {
       await this.registerPluginExtensions(plugin);
       await plugin.onActivate?.();
     }
@@ -121,7 +126,7 @@ class PluginManager {
   }
 
   public isPluginEnabled(pluginId: string): boolean {
-    return !this.disabledPlugins.has(pluginId);
+    return this.enabledStates.get(pluginId) ?? true;
   }
 
   public async setPluginEnabled(pluginId: string, enabled: boolean): Promise<void> {
@@ -130,17 +135,19 @@ class PluginManager {
       throw new Error(`Plugin with ID ${pluginId} is not registered`);
     }
 
-    if (enabled && this.disabledPlugins.has(pluginId)) {
-      this.disabledPlugins.delete(pluginId);
-      await this.registerPluginExtensions(plugin);
-      await plugin.onActivate?.();
-    } else if (!enabled && !this.disabledPlugins.has(pluginId)) {
-      await plugin.onDeactivate?.();
-      await this.unregisterPluginExtensions(plugin);
-      this.disabledPlugins.add(pluginId);
-    }
+    const currentlyEnabled = this.enabledStates.get(pluginId) ?? true;
+    if (enabled !== currentlyEnabled) {
+      if (enabled) {
+        await this.registerPluginExtensions(plugin);
+        await plugin.onActivate?.();
+      } else {
+        await plugin.onDeactivate?.();
+        await this.unregisterPluginExtensions(plugin);
+      }
 
-    this.saveDisabledPlugins();
+      this.enabledStates.set(pluginId, enabled);
+      await setPluginSettings(pluginId, enabled);
+    }
   }
 
   private async registerPluginExtensions(plugin: Plugin): Promise<void> {
@@ -217,22 +224,7 @@ class PluginManager {
     }
   }
 
-  private loadDisabledPlugins(): string[] {
-    try {
-      const stored = localStorage.getItem('disabledPlugins');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  }
 
-  private saveDisabledPlugins(): void {
-    try {
-      localStorage.setItem('disabledPlugins', JSON.stringify(Array.from(this.disabledPlugins)));
-    } catch {
-      console.error('Failed to save disabled plugins state');
-    }
-  }
 }
 
 export const pluginManager = PluginManager.getInstance();

@@ -85,5 +85,13 @@ export const summary = createTable("summary", {
   connectionId: text("connection_id").notNull(),
   saved: boolean("saved").notNull().default(false),
   tags: text("tags"),
-  suggestedReply: text("suggested_reply")
+  suggestedReply: text("suggested_reply"),
+});
+
+export const pluginSettings = createTable("plugin_settings", {
+  pluginId: text("plugin_id").primaryKey(),
+  enabled: boolean("enabled").notNull().default(true),
+  userId: text("user_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
