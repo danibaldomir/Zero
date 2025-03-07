@@ -3,32 +3,38 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PluginOptionsForm } from "@/components/plugin/plugin-options-form";
 import { SettingsCard } from "@/components/settings/settings-card";
+import { getAllPluginSettings } from "@/actions/plugin-settings";
+import { uninstallPlugin } from "@/actions/plugin-uninstall";
 import { useCallback, useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { pluginManager } from "@/lib/plugin-manager";
 import { usePlugins } from "@/hooks/use-plugins";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
+import { Loader2, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function PluginsPage() {
   const { plugins } = usePlugins();
   const { data: session } = useSession();
   const [enabledStates, setEnabledStates] = useState<Record<string, boolean>>({});
-  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>();
+  const [installedPlugins, setInstalledPlugins] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const loadPluginStates = async () => {
-      if (!session?.user?.id || plugins.length === 0) {
-        return;
-      }
+      if (!session?.user?.id) return;
 
       try {
+        const settings = await getAllPluginSettings();
+        setInstalledPlugins(settings);
+
         const states: Record<string, boolean> = {};
-        for (const plugin of plugins) {
-          states[plugin.metadata.id] = await pluginManager.isPluginEnabled(plugin.metadata.id);
+        for (const pluginId of Object.keys(settings)) {
+          states[pluginId] = pluginManager.isPluginEnabled(pluginId);
         }
         setEnabledStates(states);
       } catch (error) {
@@ -38,7 +44,7 @@ export default function PluginsPage() {
     };
 
     loadPluginStates();
-  }, [plugins, session?.user?.id]);
+  }, [session?.user?.id]);
 
   const handleTogglePlugin = useCallback(
     async (pluginId: string, enabled: boolean) => {
@@ -66,62 +72,109 @@ export default function PluginsPage() {
     [session?.user?.id],
   );
 
+  const handleRemovePlugin = useCallback(
+    async (pluginId: string) => {
+      if (!session?.user?.id) {
+        toast.error("Please sign in to manage plugins");
+        return;
+      }
+
+      setLoadingStates((prev) => ({ ...prev, [pluginId]: true }));
+
+      try {
+        await uninstallPlugin(pluginId);
+
+        setInstalledPlugins((prev) => {
+          const next = { ...prev };
+          delete next[pluginId];
+          return next;
+        });
+
+        toast.success("Plugin removed successfully");
+      } catch (error) {
+        console.error("Failed to remove plugin:", error);
+        toast.error(error instanceof Error ? error.message : "Failed to remove plugin");
+      } finally {
+        setLoadingStates((prev) => ({ ...prev, [pluginId]: false }));
+      }
+    },
+    [session?.user?.id],
+  );
+
   return (
     <div className="grid gap-6">
-      <SettingsCard title="Plugins" description="Manage your installed plugins and their settings.">
+      <SettingsCard
+        title="My Plugins"
+        description="Manage your installed plugins and their settings."
+      >
         <div className="space-y-6">
           <div className="grid gap-4">
-            {plugins.length === 0 ? (
+            {plugins.filter((p) => installedPlugins[p.metadata.id]).length === 0 ? (
               <div className="text-muted-foreground py-8 text-center">No plugins installed</div>
             ) : (
-              plugins.map((plugin) => (
-                <Card key={plugin.metadata.id}>
-                  <CardHeader>
-                    <CardTitle className="text-xl">{plugin.metadata.name}</CardTitle>
-                    <CardDescription>{plugin.metadata.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id={`plugin-${plugin.metadata.id}`}
-                          checked={enabledStates[plugin.metadata.id] ?? true}
-                          onCheckedChange={(checked) =>
-                            handleTogglePlugin(plugin.metadata.id, checked)
-                          }
-                          disabled={loadingStates[plugin.metadata.id]}
-                        />
-                        <Label htmlFor={`plugin-${plugin.metadata.id}`}>
-                          {loadingStates[plugin.metadata.id] ? (
-                            <span className="flex items-center gap-2">
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              Updating...
-                            </span>
-                          ) : (
-                            "Enabled"
-                          )}
-                        </Label>
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        Version {plugin.metadata.version} • By {plugin.metadata.author}
-                      </div>
-                    </div>
-
-                    {plugin.options && Object.keys(plugin.options).length > 0 && (
-                      <>
-                        <Separator />
-                        <div className="space-y-4">
-                          <h3 className="font-medium">Plugin Settings</h3>
-                          <PluginOptionsForm
-                            pluginId={plugin.metadata.id}
-                            options={plugin.options}
-                          />
+              plugins
+                .filter((p) => installedPlugins[p.metadata.id])
+                .map((plugin) => (
+                  <Card key={plugin.metadata.id}>
+                    <CardHeader>
+                      <CardTitle className="text-xl">{plugin.metadata.name}</CardTitle>
+                      <CardDescription>{plugin.metadata.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id={`plugin-${plugin.metadata.id}`}
+                              checked={enabledStates[plugin.metadata.id] ?? true}
+                              onCheckedChange={(checked) =>
+                                handleTogglePlugin(plugin.metadata.id, checked)
+                              }
+                              disabled={loadingStates?.[plugin.metadata.id]}
+                            />
+                            <Label htmlFor={`plugin-${plugin.metadata.id}`}>
+                              {loadingStates?.[plugin.metadata.id] ? (
+                                <span className="flex items-center gap-2">
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  Updating...
+                                </span>
+                              ) : (
+                                "Enabled"
+                              )}
+                            </Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleRemovePlugin(plugin.metadata.id)}
+                              disabled={loadingStates?.[plugin.metadata.id]}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+                        <div className="text-muted-foreground text-sm">
+                          Version {plugin.metadata.version} • By {plugin.metadata.author}
+                        </div>
+                      </div>
+
+                      {plugin.options && Object.keys(plugin.options).length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="space-y-4">
+                            <h3 className="font-medium">Plugin Settings</h3>
+                            <PluginOptionsForm
+                              pluginId={plugin.metadata.id}
+                              options={plugin.options}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
             )}
           </div>
         </div>

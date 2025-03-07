@@ -6,6 +6,7 @@ export interface PluginMetadata {
   version: string;
   description: string;
   author: string;
+  tags?: string[];
 }
 
 export interface UIExtensionPoint {

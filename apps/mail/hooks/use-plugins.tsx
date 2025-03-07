@@ -5,6 +5,7 @@ import { pluginManager } from "../lib/plugin-manager";
 interface PluginContextType {
   plugins: Plugin[];
   getUIExtensions: (location: string) => UIExtensionPoint[];
+  togglePlugin: (pluginId: string) => Promise<void>;
 }
 
 const PluginContext = createContext<PluginContextType | undefined>(undefined);
@@ -14,12 +15,10 @@ export function PluginProvider({ children }: { children: ReactNode }) {
   const [enabledPlugins, setEnabledPlugins] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    // Initial plugin load
     const loadPlugins = () => {
       const allPlugins = pluginManager.getAllPlugins();
       setPlugins(allPlugins);
 
-      // Update enabled states
       const enabled = new Set(
         allPlugins
           .filter((plugin) => pluginManager.isPluginEnabled(plugin.metadata.id))
@@ -45,9 +44,30 @@ export function PluginProvider({ children }: { children: ReactNode }) {
     [plugins, enabledPlugins],
   );
 
+  const togglePlugin = useCallback(async (pluginId: string) => {
+    try {
+      const { togglePlugin: togglePluginAction } = await import("@/actions/toggle-plugin");
+      await togglePluginAction(pluginId);
+
+      setEnabledPlugins((prev) => {
+        const next = new Set(prev);
+        if (next.has(pluginId)) {
+          next.delete(pluginId);
+        } else {
+          next.add(pluginId);
+        }
+        return next;
+      });
+    } catch (error) {
+      console.error("Error toggling plugin:", error);
+      throw error;
+    }
+  }, []);
+
   const value = {
     plugins,
     getUIExtensions,
+    togglePlugin,
   };
 
   return <PluginContext.Provider value={value}>{children}</PluginContext.Provider>;

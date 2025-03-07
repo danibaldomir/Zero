@@ -93,6 +93,7 @@ export const pluginSettings = createTable(
   {
     pluginId: text("plugin_id").notNull(),
     enabled: boolean("enabled").notNull().default(true),
+    added: boolean("added").notNull().default(true),
     userId: text("user_id")
       .notNull()
       .references(() => user.id),

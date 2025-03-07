@@ -45,6 +45,7 @@ const ResendPlugin: Plugin = {
     description: "Resend plugin for Zero Email",
     version: "1.0.0",
     author: "Zero Email",
+    tags: ["Resend", "Email", "Zero", "Tag"],
   },
   options: {
     apiKey: {
