@@ -127,6 +127,13 @@
       "when": 1741309184140,
       "tag": "0017_parallel_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1741320707897,
+      "tag": "0018_bored_justice",
+      "breakpoints": true
     }
   ]
 }
