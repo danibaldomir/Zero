@@ -1,8 +1,8 @@
 "use client";
 
-import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ComponentProps, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { AlertTriangle, Tag, User, Bell, Briefcase, Users } from "lucide-react";
+import { AlertTriangle, Bell, Briefcase, Tag, User, Users } from "lucide-react";
 import { EmptyState, type FolderType } from "@/components/mail/empty-state";
 import { ExtensionPoint } from "@/components/plugin/extension-point";
 import { EXTENSION_POINTS } from "@/constants/extension-points";
@@ -61,7 +61,7 @@ const highlightText = (text: string, highlight: string) => {
   });
 };
 
-const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
+const Thread = memo(({ message, selectMode, demo, onClick }: ThreadProps) => {
   const [mail] = useMail();
   const { data: session } = useSession();
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -71,7 +71,6 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
 
   const isMailSelected = message.id === mail.selected;
   const isMailBulkSelected = mail.bulkSelected.includes(message.id);
-
   const handleMouseEnter = () => {
     if (demo) return;
     isHovering.current = true;
@@ -179,15 +178,15 @@ const Thread = ({ message, selectMode, demo, onClick }: ThreadProps) => {
       </p>
     </div>
   );
-};
+});
 
-export function MailListDemo() {
+export function MailListDemo({ items: filteredItems = items }) {
   return (
     <ScrollArea className="h-full pb-2" type="scroll">
       <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.BEFORE_LIST} />
       <div className={cn("relative min-h-[calc(100vh-4rem)] w-full")}>
         <div className="absolute left-0 top-0 w-full p-[8px]">
-          {items.map((item) => {
+          {filteredItems.map((item) => {
             return item ? <Thread demo key={item.id} message={item} selectMode={"single"} /> : null;
           })}
         </div>
@@ -419,65 +418,68 @@ export function MailList({ isCompact }: MailListProps) {
         ? "selectAllBelow"
         : "single";
 
-  const handleMailClick = (message: InitialThread) => () => {
-    if (selectMode === "mass") {
-      const updatedBulkSelected = mail.bulkSelected.includes(message.id)
-        ? mail.bulkSelected.filter((id) => id !== message.id)
-        : [...mail.bulkSelected, message.id];
+  const handleMailClick = useCallback(
+    (message: InitialThread) => () => {
+      if (selectMode === "mass") {
+        const updatedBulkSelected = mail.bulkSelected.includes(message.id)
+          ? mail.bulkSelected.filter((id) => id !== message.id)
+          : [...mail.bulkSelected, message.id];
 
-      setMail({ ...mail, bulkSelected: updatedBulkSelected });
-      return;
-    }
-
-    if (selectMode === "range") {
-      const lastSelectedItem =
-        mail.bulkSelected[mail.bulkSelected.length - 1] ?? mail.selected ?? message.id;
-
-      const mailsIndex = items.map((m) => m.id);
-      const startIdx = mailsIndex.indexOf(lastSelectedItem);
-      const endIdx = mailsIndex.indexOf(message.id);
-
-      if (startIdx !== -1 && endIdx !== -1) {
-        const selectedRange = mailsIndex.slice(
-          Math.min(startIdx, endIdx),
-          Math.max(startIdx, endIdx) + 1,
-        );
-
-        setMail({ ...mail, bulkSelected: selectedRange });
+        setMail({ ...mail, bulkSelected: updatedBulkSelected });
+        return;
       }
-      return;
-    }
 
-    if (selectMode === "selectAllBelow") {
-      const mailsIndex = items.map((m) => m.id);
-      const startIdx = mailsIndex.indexOf(message.id);
+      if (selectMode === "range") {
+        const lastSelectedItem =
+          mail.bulkSelected[mail.bulkSelected.length - 1] ?? mail.selected ?? message.id;
 
-      if (startIdx !== -1) {
-        const selectedRange = mailsIndex.slice(startIdx);
+        const mailsIndex = items.map((m) => m.id);
+        const startIdx = mailsIndex.indexOf(lastSelectedItem);
+        const endIdx = mailsIndex.indexOf(message.id);
 
-        setMail({ ...mail, bulkSelected: selectedRange });
+        if (startIdx !== -1 && endIdx !== -1) {
+          const selectedRange = mailsIndex.slice(
+            Math.min(startIdx, endIdx),
+            Math.max(startIdx, endIdx) + 1,
+          );
+
+          setMail({ ...mail, bulkSelected: selectedRange });
+        }
+        return;
       }
-      return;
-    }
 
-    if (mail.selected === message.threadId || mail.selected === message.id) {
-      setMail({
-        selected: null,
-        bulkSelected: [],
-      });
-    } else {
-      setMail({
-        ...mail,
-        selected: message.threadId ?? message.id,
-        bulkSelected: [],
-      });
-    }
-    if (message.unread) {
-      return markAsRead({ ids: [message.id] })
-        .then(() => mutate() as any)
-        .catch(console.error);
-    }
-  };
+      if (selectMode === "selectAllBelow") {
+        const mailsIndex = items.map((m) => m.id);
+        const startIdx = mailsIndex.indexOf(message.id);
+
+        if (startIdx !== -1) {
+          const selectedRange = mailsIndex.slice(startIdx);
+
+          setMail({ ...mail, bulkSelected: selectedRange });
+        }
+        return;
+      }
+
+      if (mail.selected === message.threadId || mail.selected === message.id) {
+        setMail({
+          selected: null,
+          bulkSelected: [],
+        });
+      } else {
+        setMail({
+          ...mail,
+          selected: message.threadId ?? message.id,
+          bulkSelected: [],
+        });
+      }
+      if (message.unread) {
+        return markAsRead({ ids: [message.id] })
+          .then(() => mutate() as any)
+          .catch(console.error);
+      }
+    },
+    [mail, setMail, selectMode],
+  );
 
   const isEmpty = items.length === 0;
   const isFiltering = searchValue.value.trim().length > 0;
@@ -543,31 +545,36 @@ export function MailList({ isCompact }: MailListProps) {
   );
 }
 
-function MailLabels({ labels }: { labels: string[] }) {
-  if (!labels.length) return null;
+const MailLabels = memo(
+  ({ labels }: { labels: string[] }) => {
+    if (!labels.length) return null;
 
-  const visibleLabels = labels.filter(
-    (label) => !["unread", "inbox"].includes(label.toLowerCase()),
-  );
+    const visibleLabels = labels.filter(
+      (label) => !["unread", "inbox"].includes(label.toLowerCase()),
+    );
 
-  if (!visibleLabels.length) return null;
+    if (!visibleLabels.length) return null;
 
-  return (
-    <div className={cn("flex select-none items-center gap-1")}>
-      {visibleLabels.map((label) => {
-        const style = getDefaultBadgeStyle(label);
-        // Skip rendering if style is "secondary" (default case)
-        if (style === "secondary") return null;
+    return (
+      <div className={cn("flex select-none items-center gap-1")}>
+        {visibleLabels.map((label) => {
+          const style = getDefaultBadgeStyle(label);
+          // Skip rendering if style is "secondary" (default case)
+          if (style === "secondary") return null;
 
-        return (
-          <Badge key={label} className="rounded-full p-1" variant={style}>
-            {getLabelIcon(label)}
-          </Badge>
-        );
-      })}
-    </div>
-  );
-}
+          return (
+            <Badge key={label} className="rounded-full p-1" variant={style}>
+              {getLabelIcon(label)}
+            </Badge>
+          );
+        })}
+      </div>
+    );
+  },
+  (prev, next) => {
+    return prev.labels === next.labels;
+  },
+);
 
 function getLabelIcon(label: string) {
   const normalizedLabel = label.toLowerCase().replace(/^category_/i, "");
