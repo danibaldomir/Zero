@@ -129,7 +129,6 @@ const Thread = memo(({ message, selectMode, demo, onClick }: ThreadProps) => {
         // isCompact && "py-2",
       )}
     >
-      <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.LIST_ITEM} data={{ message }} />
       <div
         className={cn(
           "bg-primary absolute inset-y-0 left-0 w-1 -translate-x-2 transition-transform ease-out",
@@ -155,6 +154,7 @@ const Thread = memo(({ message, selectMode, demo, onClick }: ThreadProps) => {
               {message.totalReplies}
             </span>
           ) : null}
+          <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.LIST_ITEM} data={{ message }} />
         </div>
         {message.receivedOn ? (
           <p

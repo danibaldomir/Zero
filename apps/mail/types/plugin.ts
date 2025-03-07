@@ -33,14 +33,44 @@ export interface PluginHook {
   priority?: number;
 }
 
+export interface PluginDataStorage {
+  set: <T>(key: string, data: T) => Promise<void>;
+  get: <T>(key: string) => Promise<T | null>;
+  delete: (key: string) => Promise<void>;
+}
+
 export interface Plugin {
   metadata: PluginMetadata;
   uiExtensions?: UIExtensionPoint[];
   emailDrivers?: EmailDriver[];
   authProviders?: AuthProvider[];
   hooks?: PluginHook[];
-  onActivate?: () => Promise<void> | void;
+  onActivate?: (storage: PluginDataStorage) => Promise<void> | void;
   onDeactivate?: () => Promise<void> | void;
+  storage?: PluginDataStorage;
+  options?: PluginOptions;
+}
+
+export interface PluginOptionField {
+  type: "text" | "password" | "number" | "boolean" | "select" | "radio";
+  label: string;
+  description?: string;
+  required?: boolean;
+  defaultValue?: any;
+  options?: { label: string; value: any }[];
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+    message?: string;
+  };
+}
+
+export interface PluginOptions {
+  [key: string]: {
+    value: any;
+    field: PluginOptionField;
+  };
 }
 
 export interface EmailSendOptions {

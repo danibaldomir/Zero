@@ -134,6 +134,13 @@
       "when": 1741320707897,
       "tag": "0018_bored_justice",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1741353305543,
+      "tag": "0019_equal_vulcan",
+      "breakpoints": true
     }
   ]
 }

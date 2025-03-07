@@ -1,8 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PluginOptionsForm } from "@/components/plugin/plugin-options-form";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { useCallback, useEffect, useState } from "react";
+import { Separator } from "@/components/ui/separator";
 import { pluginManager } from "@/lib/plugin-manager";
 import { usePlugins } from "@/hooks/use-plugins";
 import { Switch } from "@/components/ui/switch";
@@ -78,30 +80,45 @@ export default function PluginsPage() {
                     <CardTitle className="text-xl">{plugin.metadata.name}</CardTitle>
                     <CardDescription>{plugin.metadata.description}</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id={`plugin-${plugin.metadata.id}`}
-                        checked={enabledStates[plugin.metadata.id] ?? true}
-                        onCheckedChange={(checked) =>
-                          handleTogglePlugin(plugin.metadata.id, checked)
-                        }
-                        disabled={loadingStates[plugin.metadata.id]}
-                      />
-                      <Label htmlFor={`plugin-${plugin.metadata.id}`}>
-                        {loadingStates[plugin.metadata.id] ? (
-                          <span className="flex items-center gap-2">
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Updating...
-                          </span>
-                        ) : (
-                          "Enabled"
-                        )}
-                      </Label>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`plugin-${plugin.metadata.id}`}
+                          checked={enabledStates[plugin.metadata.id] ?? true}
+                          onCheckedChange={(checked) =>
+                            handleTogglePlugin(plugin.metadata.id, checked)
+                          }
+                          disabled={loadingStates[plugin.metadata.id]}
+                        />
+                        <Label htmlFor={`plugin-${plugin.metadata.id}`}>
+                          {loadingStates[plugin.metadata.id] ? (
+                            <span className="flex items-center gap-2">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Updating...
+                            </span>
+                          ) : (
+                            "Enabled"
+                          )}
+                        </Label>
+                      </div>
+                      <div className="text-muted-foreground text-sm">
+                        Version {plugin.metadata.version} • By {plugin.metadata.author}
+                      </div>
                     </div>
-                    <div className="text-muted-foreground mt-2 text-sm">
-                      Version {plugin.metadata.version} • By {plugin.metadata.author}
-                    </div>
+
+                    {plugin.options && Object.keys(plugin.options).length > 0 && (
+                      <>
+                        <Separator />
+                        <div className="space-y-4">
+                          <h3 className="font-medium">Plugin Settings</h3>
+                          <PluginOptionsForm
+                            pluginId={plugin.metadata.id}
+                            options={plugin.options}
+                          />
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               ))
