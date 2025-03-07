@@ -6,6 +6,7 @@ import { ShieldCheckIcon } from "@/components/icons/animated/shield";
 import { KeyboardIcon } from "@/components/icons/animated/keyboard";
 import { SparklesIcon } from "@/components/icons/animated/sparkles";
 import { ArchiveIcon } from "@/components/icons/animated/archive";
+import { SyringeIcon } from "@/components/icons/animated/syringe";
 import { DeleteIcon } from "@/components/icons/animated/trash";
 import { UsersIcon } from "@/components/icons/animated/users";
 import { InboxIcon } from "@/components/icons/animated/inbox";
@@ -138,7 +139,7 @@ export const navigationConfig: Record<string, NavConfig> = {
           {
             title: "Plugins",
             url: "/settings/plugins",
-            icon: SettingsGearIcon,
+            icon: SyringeIcon,
           },
           {
             title: "Connections",
