@@ -33,6 +33,14 @@ export const EXTENSION_POINTS = {
     DRAFTS: "mail.compose.drafts",
   },
 
+  REPLY: {
+    BEFORE_FORM: "mail.reply.before",
+    AFTER_FORM: "mail.reply.after",
+    ATTACHMENTS: "mail.reply.attachments",
+    EDITOR: "mail.reply.editor",
+    SEND_BUTTON: "mail.reply.send_button",
+  },
+
   SETTINGS: {
     GENERAL: "settings.general",
     ACCOUNT: "settings.account",
