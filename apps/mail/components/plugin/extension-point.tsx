@@ -10,10 +10,6 @@ export function ExtensionPoint({ location, data }: ExtensionPointProps) {
   const { getUIExtensions } = usePlugins();
   const extensions = getUIExtensions(location);
 
-  if (extensions.length > 0) {
-    console.log(`Rendering ${extensions.length} extensions for ${location}`);
-  }
-
   return (
     <>
       {extensions.map((extension, index) => {

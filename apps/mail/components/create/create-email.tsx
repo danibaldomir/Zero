@@ -287,6 +287,8 @@ export function CreateEmail() {
                 </div>
               </div>
 
+              <ExtensionPoint location={EXTENSION_POINTS.COMPOSE.RECIPIENTS} />
+
               <div className="flex items-center">
                 <div className="text-muted-foreground w-20 flex-shrink-0 pr-3 text-right text-[1rem] font-[600] opacity-50 md:w-24">
                   Subject
