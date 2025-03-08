@@ -3,6 +3,7 @@
 import { pluginSettings } from "@zero/db/schema";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@zero/db";
 
@@ -19,6 +20,14 @@ export async function installPlugin(pluginId: string) {
       throw new Error("Plugin ID is required");
     }
 
+    const existingSetting = await db.query.pluginSettings.findFirst({
+      where: and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
+    });
+
+    if (existingSetting?.added) {
+      throw new Error("Plugin is already installed");
+    }
+
     await db
       .insert(pluginSettings)
       .values({
@@ -32,8 +41,8 @@ export async function installPlugin(pluginId: string) {
       .onConflictDoUpdate({
         target: [pluginSettings.pluginId, pluginSettings.userId],
         set: {
-          enabled: true,
           added: true,
+          enabled: true,
           updatedAt: new Date(),
         },
       });

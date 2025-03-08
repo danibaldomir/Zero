@@ -12,7 +12,7 @@ export async function togglePlugin(pluginId: string) {
     const headersList = await headers();
     const session = await auth.api.getSession({ headers: headersList });
 
-    if (!session) {
+    if (!session?.user?.id) {
       throw new Error("Unauthorized");
     }
 
@@ -20,26 +20,23 @@ export async function togglePlugin(pluginId: string) {
       where: and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
     });
 
-    if (existingSetting) {
-      await db
-        .update(pluginSettings)
-        .set({
-          enabled: !existingSetting.enabled,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
-        );
-    } else {
-      // Create new setting
-      await db.insert(pluginSettings).values({
-        pluginId,
-        userId: session.user.id,
-        enabled: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+    if (!existingSetting) {
+      throw new Error("Plugin not installed");
     }
+
+    if (!existingSetting.added) {
+      throw new Error("Plugin not added to user account");
+    }
+
+    await db
+      .update(pluginSettings)
+      .set({
+        enabled: !existingSetting.enabled,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
+      );
 
     revalidatePath("/plugins");
     revalidatePath("/settings/plugins");

@@ -10,7 +10,7 @@ export async function getPluginSettings(pluginId: string) {
   const headersList = await headers();
   const session = await auth.api.getSession({ headers: headersList });
 
-  if (!session?.user?.id) return true; // Default to enabled if no user
+  if (!session?.user?.id) return { enabled: true, added: false }; // Default state if no user
 
   const settings = await db
     .select()
@@ -18,7 +18,11 @@ export async function getPluginSettings(pluginId: string) {
     .where(and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)))
     .execute();
 
-  return settings[0]?.enabled ?? true;
+  const setting = settings[0];
+  return {
+    enabled: setting?.enabled ?? false,
+    added: setting?.added ?? false,
+  };
 }
 
 export async function setPluginSettings(pluginId: string, enabled: boolean) {
@@ -26,20 +30,23 @@ export async function setPluginSettings(pluginId: string, enabled: boolean) {
   const session = await auth.api.getSession({ headers: headersList });
   if (!session?.user?.id) throw new Error("User not authenticated");
 
+  const existingSetting = await db.query.pluginSettings.findFirst({
+    where: and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
+  });
+
+  if (!existingSetting?.added) {
+    throw new Error("Cannot toggle a plugin that is not added to your account");
+  }
+
   await db
-    .insert(pluginSettings)
-    .values({
-      pluginId,
+    .update(pluginSettings)
+    .set({
       enabled,
-      userId: session.user.id,
+      updatedAt: new Date(),
     })
-    .onConflictDoUpdate({
-      target: [pluginSettings.pluginId, pluginSettings.userId],
-      set: {
-        enabled,
-        updatedAt: new Date(),
-      },
-    })
+    .where(
+      and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
+    )
     .execute();
 
   return { success: true };
@@ -56,5 +63,9 @@ export async function getAllPluginSettings() {
     .where(eq(pluginSettings.userId, session.user.id))
     .execute();
 
-  return Object.fromEntries(settings.map((s) => [s.pluginId, s.enabled]));
+  return Object.fromEntries(
+    settings
+      .filter((s) => s.added) // Only return settings for added plugins
+      .map((s) => [s.pluginId, { enabled: s.enabled, added: s.added }])
+  );
 }

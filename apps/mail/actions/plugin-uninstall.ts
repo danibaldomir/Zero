@@ -20,8 +20,24 @@ export async function uninstallPlugin(pluginId: string) {
       throw new Error("Plugin ID is required");
     }
 
+    const existingSetting = await db.query.pluginSettings.findFirst({
+      where: and(
+        eq(pluginSettings.pluginId, pluginId),
+        eq(pluginSettings.userId, session.user.id)
+      ),
+    });
+
+    if (!existingSetting?.added) {
+      throw new Error("Plugin is not installed");
+    }
+
     await db
-      .delete(pluginSettings)
+      .update(pluginSettings)
+      .set({
+        added: false,
+        enabled: false,
+        updatedAt: new Date(),
+      })
       .where(
         and(eq(pluginSettings.pluginId, pluginId), eq(pluginSettings.userId, session.user.id)),
       );

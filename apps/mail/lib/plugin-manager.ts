@@ -16,7 +16,7 @@ class PluginManager {
   private uiExtensions: Map<string, UIExtensionPoint[]>;
   private emailDrivers: Map<string, EmailDriver>;
   private authProviders: Map<string, AuthProvider>;
-  private enabledStates: Map<string, boolean>;
+  private enabledStates: Map<string, { enabled: boolean; added: boolean }>;
 
   private constructor() {
     this.plugins = new Map();
@@ -143,7 +143,11 @@ class PluginManager {
   }
 
   public isPluginEnabled(pluginId: string): boolean {
-    return this.enabledStates.get(pluginId) ?? true;
+    return this.enabledStates.get(pluginId)?.enabled ?? true;
+  }
+
+  public isPluginAdded(pluginId: string): boolean {
+    return this.enabledStates.get(pluginId)?.added ?? false;
   }
 
   public async setPluginEnabled(pluginId: string, enabled: boolean): Promise<void> {
@@ -164,7 +168,7 @@ class PluginManager {
         await this.unregisterPluginExtensions(plugin);
       }
 
-      this.enabledStates.set(pluginId, enabled);
+      this.enabledStates.set(pluginId, { enabled, added: this.isPluginAdded(pluginId) });
       await setPluginSettings(pluginId, enabled);
     }
   }

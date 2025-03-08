@@ -22,7 +22,9 @@ export default function PluginsPage() {
   const { data: session } = useSession();
   const [enabledStates, setEnabledStates] = useState<Record<string, boolean>>({});
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>();
-  const [installedPlugins, setInstalledPlugins] = useState<Record<string, boolean>>({});
+  const [installedPlugins, setInstalledPlugins] = useState<{
+    [k: string]: { enabled: boolean; added: boolean };
+  }>({});
 
   useEffect(() => {
     const loadPluginStates = async () => {

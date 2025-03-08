@@ -141,6 +141,13 @@
       "when": 1741353305543,
       "tag": "0019_equal_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1741390548727,
+      "tag": "0020_conscious_starfox",
+      "breakpoints": true
     }
   ]
 }
