@@ -2,11 +2,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ExtensionPoint } from "@/components/plugin/extension-point";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { EXTENSION_POINTS } from "@/constants/extension-points";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { BellOff, ChevronDown, Lock } from "lucide-react";
 import { useSummary } from "@/hooks/use-summary";
-import { BellOff, Lock } from "lucide-react";
+import { TextShimmer } from "../ui/text-shimmer";
 import { Separator } from "../ui/separator";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MailIframe } from "./mail-iframe";
 import { ParsedMessage } from "@/types";
 import { Button } from "../ui/button";
@@ -17,24 +17,14 @@ import Image from "next/image";
 const StreamingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
 
   useEffect(() => {
     let currentIndex = 0;
     setIsComplete(false);
     setIsThinking(true);
-    
-    // Dots animation
-    const dotsInterval = setInterval(() => {
-      setThinkingDots(prev => {
-        if (prev === "...") return ".";
-        if (prev === "..") return "...";
-        if (prev === ".") return "..";
-        return ".";
-      });
-    }, 450);
-    
+
     const thinkingTimeout = setTimeout(() => {
-      clearInterval(dotsInterval);
       setIsThinking(false);
       setDisplayText("");
 
@@ -54,7 +44,6 @@ const StreamingText = ({ text }: { text: string }) => {
 
     return () => {
       clearTimeout(thinkingTimeout);
-      clearInterval(dotsInterval);
     };
   }, [text]);
 
@@ -67,7 +56,7 @@ const StreamingText = ({ text }: { text: string }) => {
         )}
       >
         {isThinking ? (
-          <span className="animate-pulse">Thinking{thinkingDots}</span>
+          <TextShimmer duration={1}>Thinking...</TextShimmer>
         ) : (
           <span>{displayText}</span>
         )}

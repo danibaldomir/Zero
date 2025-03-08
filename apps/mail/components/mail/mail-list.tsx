@@ -136,7 +136,7 @@ const Thread = memo(({ message, selectMode, demo, onClick }: ThreadProps) => {
         )}
       />
       <div className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <p
             className={cn(
               message.unread ? "font-bold" : "font-medium",
@@ -147,14 +147,21 @@ const Thread = memo(({ message, selectMode, demo, onClick }: ThreadProps) => {
               {highlightText(message.sender.name, searchValue.highlight)}
             </span>{" "}
             {message.unread ? <span className="size-2 rounded-full bg-[#006FFE]" /> : null}
+            <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.LIST_ITEM} data={{ message }} />
           </p>
-          <MailLabels labels={message.tags} />
-          {message.totalReplies !== 1 ? (
-            <span className="rounded-full border border-dotted px-[5px] py-[1px] text-xs opacity-70">
-              {message.totalReplies}
-            </span>
-          ) : null}
-          <ExtensionPoint location={EXTENSION_POINTS.MAIL_LIST.LIST_ITEM} data={{ message }} />
+          <div className="flex items-center gap-1">
+            <MailLabels labels={message.tags} />
+            {message.totalReplies > 1 ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="rounded-full border border-dotted px-[5px] py-[1px] text-xs opacity-70">
+                    {message.totalReplies}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{message.totalReplies} Replies</TooltipContent>
+              </Tooltip>
+            ) : null}
+          </div>
         </div>
         {message.receivedOn ? (
           <p
