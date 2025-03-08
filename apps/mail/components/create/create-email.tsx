@@ -240,7 +240,7 @@ export function CreateEmail() {
       <div className="relative flex h-full flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-7xl space-y-12 px-4 pt-4 md:px-2">
-            <div className="space-y-3 md:px-1">
+            <form className="space-y-3 md:px-1" id="create-email">
               <div className="flex items-center">
                 <div className="text-muted-foreground w-20 flex-shrink-0 pr-3 text-right text-[1rem] font-[600] opacity-50 md:w-24">
                   To
@@ -315,7 +315,7 @@ export function CreateEmail() {
                   />
                 </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
 
