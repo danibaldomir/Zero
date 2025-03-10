@@ -1,5 +1,5 @@
-import { BellOff, ChevronDown, Download, ExternalLink, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Download, ExternalLink } from "lucide-react";
 import { Button } from "../ui/button";
 
 type Props = {

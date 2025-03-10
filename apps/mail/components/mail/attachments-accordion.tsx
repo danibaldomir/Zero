@@ -1,14 +1,10 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { formatFileSize, getFileIcon } from "@/lib/utils";
 import { Paperclip } from "lucide-react";
+import { Attachment } from "@/types";
 
 type Props = {
-  attachments: {
-    filename: string;
-    mimeType: string;
-    size: number;
-    attachmentId: string;
-    headers: any;
-  }[];
+  attachments: Attachment[];
   setSelectedAttachment: (attachment: {
     id: string;
     name: string;
@@ -55,25 +51,15 @@ const AttachmentsAccordion = ({ attachments, setSelectedAttachment }: Props) => 
                         />
                       ) : (
                         <div className="text-muted-foreground text-2xl">
-                          {attachment.mimeType === "application/pdf" && "📄"}
-                          {attachment.mimeType ===
-                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
-                            "📊"}
-                          {attachment.mimeType ===
-                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
-                            "📝"}
-                          {![
-                            "application/pdf",
-                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            "image",
-                          ].includes(attachment.mimeType) && "📎"}
+                          {getFileIcon(attachment.mimeType)}
                         </div>
                       )}
                     </div>
                     <div className="p-2">
                       <p className="truncate text-sm font-medium">{attachment.filename}</p>
-                      <p className="text-muted-foreground text-xs">{attachment.size}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {formatFileSize(attachment.size)}
+                      </p>
                     </div>
                   </button>
                 </div>
