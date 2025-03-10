@@ -49,6 +49,14 @@ export interface ParsedMessage {
   inReplyTo?: string;
   messageId?: string;
   threadId?: string;
+  attachments?: {
+    filename: string;
+    mimeType: string;
+    size: number;
+    attachmentId: string;
+    // TODO: Fix typing
+    headers: any;
+  }[];
 }
 
 export interface IConnection {

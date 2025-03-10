@@ -1,17 +1,34 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { BellOff, Download, ExternalLink, Lock, Paperclip } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ChevronDown } from "lucide-react";
-import { BellOff, Lock } from "lucide-react";
+import AttachmentsAccordion from "./attachments-accordion";
+import { useSummary } from "@/hooks/use-summary";
+import { TextShimmer } from "../ui/text-shimmer";
 import { Separator } from "../ui/separator";
 import { useState, useEffect } from "react";
 import { MailIframe } from "./mail-iframe";
+import { ChevronDown } from "lucide-react";
 import { ParsedMessage } from "@/types";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useSummary } from "@/hooks/use-summary";
-import { TextShimmer } from "../ui/text-shimmer";
+
+const attachments = [
+  { id: "att1", name: "Q4_Project_Proposal.pdf", type: "pdf", size: "2.4 MB", url: "#" },
+  { id: "att2", name: "Timeline_Draft.xlsx", type: "excel", size: "1.8 MB", url: "#" },
+  { id: "att3", name: "Budget_Overview.docx", type: "word", size: "1.2 MB", url: "#" },
+  {
+    id: "att4",
+    name: "Team_Structure.png",
+    type: "image",
+    size: "0.8 MB",
+    url: "/placeholder.svg?height=600&width=800",
+  },
+  { id: "att5", name: "Meeting_Notes.pdf", type: "pdf", size: "0.5 MB", url: "#" },
+];
 
 const StreamingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = useState("");
@@ -22,8 +39,7 @@ const StreamingText = ({ text }: { text: string }) => {
     let currentIndex = 0;
     setIsComplete(false);
     setIsThinking(true);
-    
-    
+
     const thinkingTimeout = setTimeout(() => {
       setIsThinking(false);
       setDisplayText("");
@@ -79,8 +95,22 @@ type Props = {
 
 const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState<null | {
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+  }>(null);
   const [openDetailsPopover, setOpenDetailsPopover] = useState<boolean>(false);
-  const { data } = demo ? { data: { content: 'This email talks about how Zero Email is the future of email. It is a new way to send and receive emails that is more secure and private.' } } : useSummary(emailData.id)
+  const { data } = demo
+    ? {
+        data: {
+          content:
+            "This email talks about how Zero Email is the future of email. It is a new way to send and receive emails that is more secure and private.",
+        },
+      }
+    : useSummary(emailData.id);
 
   useEffect(() => {
     if (index === 0) {
@@ -93,26 +123,31 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
       <div className="relative h-full overflow-y-auto">
         <div className="flex flex-col gap-4 p-4 pb-2 transition-all duration-200">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex justify-center items-start gap-4">
+            <div className="flex items-start justify-center gap-4">
               <Avatar className="rounded-md">
                 <AvatarImage alt={emailData?.sender?.name} className="rounded-md" />
-                <AvatarFallback className={cn("rounded-md", demo && "compose-gradient-animated text-black font-bold")}>
+                <AvatarFallback
+                  className={cn(
+                    "rounded-md",
+                    demo && "compose-gradient-animated font-bold text-black",
+                  )}
+                >
                   {emailData?.sender?.name
                     .split(" ")
                     .map((chunk) => chunk[0])
                     .join("")}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 relative bottom-1">
+              <div className="relative bottom-1 flex-1">
                 <div className="flex items-center justify-start gap-2">
                   <span className="font-semibold">{emailData?.sender?.name}</span>
-                  <span className="flex grow-0 items-center gap-2 text-sm text-muted-foreground">
+                  <span className="text-muted-foreground flex grow-0 items-center gap-2 text-sm">
                     <span>{emailData?.sender?.email}</span>
                     {isMuted && <BellOff className="h-4 w-4" />}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <time className="text-xs text-muted-foreground">
+                  <time className="text-muted-foreground text-xs">
                     {format(new Date(emailData?.receivedOn), "PPp")}
                   </time>
                   <Popover open={openDetailsPopover} onOpenChange={setOpenDetailsPopover}>
@@ -127,14 +162,14 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-[420px] rounded-lg p-3 shadow-lg border"
+                      className="w-[420px] rounded-lg border p-3 shadow-lg"
                       onBlur={() => setOpenDetailsPopover(false)}
                     >
                       <div className="space-y-1 text-sm">
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">From:</span>
                           <div className="ml-3">
-                            <span className="pr-1 font-bold text-muted-foreground">
+                            <span className="text-muted-foreground pr-1 font-bold">
                               {emailData?.sender?.name}
                             </span>
                             <span className="text-muted-foreground">
@@ -144,37 +179,37 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
                         </div>
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">To:</span>
-                          <span className="ml-3 text-muted-foreground">
+                          <span className="text-muted-foreground ml-3">
                             {emailData?.sender?.email}
                           </span>
                         </div>
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">Cc:</span>
-                          <span className="ml-3 text-muted-foreground">
+                          <span className="text-muted-foreground ml-3">
                             {emailData?.sender?.email}
                           </span>
                         </div>
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">Date:</span>
-                          <span className="ml-3 text-muted-foreground">
+                          <span className="text-muted-foreground ml-3">
                             {format(new Date(emailData?.receivedOn), "PPpp")}
                           </span>
                         </div>
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">Mailed-By:</span>
-                          <span className="ml-3 text-muted-foreground">
+                          <span className="text-muted-foreground ml-3">
                             {emailData?.sender?.email}
                           </span>
                         </div>
                         <div className="flex">
                           <span className="w-24 text-end text-gray-500">Signed-By:</span>
-                          <span className="ml-3 text-muted-foreground">
+                          <span className="text-muted-foreground ml-3">
                             {emailData?.sender?.email}
                           </span>
                         </div>
                         <div className="flex items-center">
                           <span className="w-24 text-end text-gray-500">Security:</span>
-                          <div className="ml-3 flex items-center gap-1 text-muted-foreground">
+                          <div className="text-muted-foreground ml-3 flex items-center gap-1">
                             <Lock className="h-4 w-4 text-green-600" /> Standard encryption (TLS)
                           </div>
                         </div>
@@ -182,38 +217,39 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
                     </PopoverContent>
                   </Popover>
                   <p onClick={() => setIsCollapsed(!isCollapsed)} className="cursor-pointer">
-                    <span className={cn(
-                      "transition-transform duration-300 inline-block relative top-0.5",
-                      !isCollapsed && "rotate-180"
-                    )}>
+                    <span
+                      className={cn(
+                        "relative top-0.5 inline-block transition-transform duration-300",
+                        !isCollapsed && "rotate-180",
+                      )}
+                    >
                       <ChevronDown className="h-4 w-4" />
                     </span>
                   </p>
                 </div>
               </div>
             </div>
-            {data ? <div className="relative top-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button size={'icon'} variant='ghost' className='rounded-md'>
-                    <Image src="/ai.svg" alt="logo" className="h-6 w-6" width={100} height={100} />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="rounded-lg border p-3 shadow-lg relative -left-24">
-                  <StreamingText text={data.content} />
-                </PopoverContent>
-              </Popover>
-            </div> : null}
+            {data ? (
+              <div className="relative top-1">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size={"icon"} variant="ghost" className="rounded-md">
+                      <Image
+                        src="/ai.svg"
+                        alt="logo"
+                        className="h-6 w-6"
+                        width={100}
+                        height={100}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="relative -left-24 rounded-lg border p-3 shadow-lg">
+                    <StreamingText text={data.content} />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            ) : null}
           </div>
-        </div>
-
-        <div
-          className={cn(
-            "h-0 overflow-hidden transition-all duration-200",
-            !isCollapsed && "h-[1px]",
-          )}
-        >
-          <Separator />
         </div>
 
         <div
@@ -232,24 +268,95 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
           )}
         >
           <div className="min-h-0 overflow-hidden">
+            {emailData?.attachments ? (
+              <>
+                <AttachmentsAccordion
+                  attachments={emailData?.attachments}
+                  setSelectedAttachment={setSelectedAttachment}
+                />
+                <Separator />
+              </>
+            ) : null}
+
             <div className="h-fit w-full p-0">
               {emailData?.decodedBody ? (
-                // <p className="flex h-[500px] w-full items-center justify-center">
-                //   There should be an iframe in here
-                // </p>
                 <MailIframe html={emailData?.decodedBody} />
               ) : (
                 <div
                   className="flex h-[500px] w-full items-center justify-center"
                   style={{ minHeight: "500px" }}
                 >
-                  <div className="h-32 w-32 animate-pulse rounded-full bg-secondary" />
+                  <div className="bg-secondary h-32 w-32 animate-pulse rounded-full" />
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={!!selectedAttachment}
+        onOpenChange={(open) => !open && setSelectedAttachment(null)}
+      >
+        <DialogContent className="!max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{selectedAttachment?.name}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <a
+                    href={selectedAttachment?.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="mr-1 h-4 w-4" />
+                    Download
+                  </a>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a href={selectedAttachment?.url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="mr-1 h-4 w-4" />
+                    Open
+                  </a>
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="bg-muted mt-4 flex min-h-[300px] items-center justify-center rounded-md p-4">
+            {selectedAttachment?.type === "image" ? (
+              <img
+                src={selectedAttachment.url || "/placeholder.svg"}
+                alt={selectedAttachment.name}
+                className="max-h-[500px] max-w-full object-contain"
+              />
+            ) : (
+              <div className="text-center">
+                <div className="mb-4 text-6xl">
+                  {selectedAttachment?.type === "pdf" && "📄"}
+                  {selectedAttachment?.type === "excel" && "📊"}
+                  {selectedAttachment?.type === "word" && "📝"}
+                  {selectedAttachment &&
+                    !["pdf", "excel", "word", "image"].includes(selectedAttachment.type) &&
+                    "📎"}
+                </div>
+                <p className="text-muted-foreground">Preview not available</p>
+                <Button variant="outline" size="sm" className="mt-4" asChild>
+                  <a
+                    href={selectedAttachment?.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="mr-1 h-4 w-4" />
+                    Download File
+                  </a>
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
