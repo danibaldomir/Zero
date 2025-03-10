@@ -210,7 +210,7 @@ export const driver = async (config: IConfig): Promise<MailManager> => {
           message.payload?.body?.data ||
           (message.payload?.parts ? findHtmlBody(message.payload.parts) : "") ||
           message.payload?.parts?.[0]?.body?.data ||
-          ""; // Fallback to first part
+          "";
 
         if (!bodyData) {
           console.log("⚠️ Driver: No email body data found");
@@ -218,7 +218,6 @@ export const driver = async (config: IConfig): Promise<MailManager> => {
           console.log("✓ Driver: Found email body data");
         }
 
-        // Process the body content
         console.log("🔄 Driver: Processing email body...");
         const decodedBody = fromBinary(bodyData);
 
@@ -227,9 +226,8 @@ export const driver = async (config: IConfig): Promise<MailManager> => {
           decodedBodyLength: decodedBody.length,
         });
 
-        // Create the full email data
         const parsedData = parse(message);
-        // Extract attachments from the message payload
+
         const attachments =
           message.payload?.parts
             ?.filter((part) => part.filename && part.filename.length > 0)
@@ -251,7 +249,6 @@ export const driver = async (config: IConfig): Promise<MailManager> => {
           attachments,
         };
 
-        // Log the result for debugging
         console.log("📧 Driver: Returning email data", {
           id: fullEmailData.id,
           hasBody: !!fullEmailData.body,
