@@ -1,34 +1,18 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import { BellOff, Download, ExternalLink, Lock, Paperclip } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { BellOff, ChevronDown, Download, ExternalLink, Lock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import AttachmentsAccordion from "./attachments-accordion";
+import AttachmentDialog from "./attachment-dialog";
 import { useSummary } from "@/hooks/use-summary";
 import { TextShimmer } from "../ui/text-shimmer";
 import { Separator } from "../ui/separator";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MailIframe } from "./mail-iframe";
-import { ChevronDown } from "lucide-react";
 import { ParsedMessage } from "@/types";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-
-const attachments = [
-  { id: "att1", name: "Q4_Project_Proposal.pdf", type: "pdf", size: "2.4 MB", url: "#" },
-  { id: "att2", name: "Timeline_Draft.xlsx", type: "excel", size: "1.8 MB", url: "#" },
-  { id: "att3", name: "Budget_Overview.docx", type: "word", size: "1.2 MB", url: "#" },
-  {
-    id: "att4",
-    name: "Team_Structure.png",
-    type: "image",
-    size: "0.8 MB",
-    url: "/placeholder.svg?height=600&width=800",
-  },
-  { id: "att5", name: "Meeting_Notes.pdf", type: "pdf", size: "0.5 MB", url: "#" },
-];
 
 const StreamingText = ({ text }: { text: string }) => {
   const [displayText, setDisplayText] = useState("");
@@ -95,7 +79,6 @@ type Props = {
 
 const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
-  const [showDetails, setShowDetails] = useState(false);
   const [selectedAttachment, setSelectedAttachment] = useState<null | {
     id: string;
     name: string;
@@ -294,69 +277,10 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
         </div>
       </div>
 
-      <Dialog
-        open={!!selectedAttachment}
-        onOpenChange={(open) => !open && setSelectedAttachment(null)}
-      >
-        <DialogContent className="!max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>{selectedAttachment?.name}</span>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild>
-                  <a
-                    href={selectedAttachment?.url}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="mr-1 h-4 w-4" />
-                    Download
-                  </a>
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <a href={selectedAttachment?.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-1 h-4 w-4" />
-                    Open
-                  </a>
-                </Button>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="bg-muted mt-4 flex min-h-[300px] items-center justify-center rounded-md p-4">
-            {selectedAttachment?.type === "image" ? (
-              <img
-                src={selectedAttachment.url || "/placeholder.svg"}
-                alt={selectedAttachment.name}
-                className="max-h-[500px] max-w-full object-contain"
-              />
-            ) : (
-              <div className="text-center">
-                <div className="mb-4 text-6xl">
-                  {selectedAttachment?.type === "pdf" && "📄"}
-                  {selectedAttachment?.type === "excel" && "📊"}
-                  {selectedAttachment?.type === "word" && "📝"}
-                  {selectedAttachment &&
-                    !["pdf", "excel", "word", "image"].includes(selectedAttachment.type) &&
-                    "📎"}
-                </div>
-                <p className="text-muted-foreground">Preview not available</p>
-                <Button variant="outline" size="sm" className="mt-4" asChild>
-                  <a
-                    href={selectedAttachment?.url}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="mr-1 h-4 w-4" />
-                    Download File
-                  </a>
-                </Button>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AttachmentDialog
+        selectedAttachment={selectedAttachment}
+        setSelectedAttachment={setSelectedAttachment}
+      />
     </div>
   );
 };
