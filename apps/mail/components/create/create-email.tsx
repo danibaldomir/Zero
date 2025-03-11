@@ -199,23 +199,6 @@ export function CreateEmail() {
     }
   };
 
-  // Add ref for to input
-  const toInputRef = React.useRef<HTMLInputElement>(null);
-
-  // Add keyboard shortcut handler
-  React.useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Only trigger if "/" is pressed and no input/textarea is focused
-      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
-        e.preventDefault();
-        toInputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, []);
-
   return (
     <div 
       className="bg-offsetLight dark:bg-offsetDark flex h-full flex-col overflow-hidden shadow-inner md:rounded-2xl md:border md:shadow-sm relative"
@@ -262,7 +245,6 @@ export function CreateEmail() {
                     </div>
                   ))}
                   <input
-                    ref={toInputRef}
                     type="email"
                     className="text-md min-w-[120px] flex-1 bg-transparent placeholder:text-[#616161] opacity-50 focus:outline-none relative left-[3px]"
                     placeholder={state.toEmails.length ? "" : "luke@example.com"}
@@ -304,6 +286,7 @@ export function CreateEmail() {
                 </div>
                 <div className="w-full">
                   <Editor
+                    className="md:max-w-[2050px] sm:max-w-[600px]"
                     initialValue={defaultValue}
                     onChange={(newContent) => setMessageContent(newContent)}
                     key={resetEditorKey}
@@ -315,7 +298,7 @@ export function CreateEmail() {
           </div>
         </div>
 
-        <div className="bg-offsetLight dark:bg-offsetDark sticky bottom-0 left-0 right-0 flex items-center justify-between p-4 pb-6">
+        <div className="bg-offsetLight dark:bg-offsetDark sticky bottom-0 left-0 right-0 flex items-center justify-between p-4 pb-4">
           <div>
             {attachments.length > 0 && (
               <Popover>
@@ -370,13 +353,10 @@ export function CreateEmail() {
           <div className="flex justify-end gap-4">
             <Button
               variant="outline"
-              className="group relative w-9 overflow-hidden transition-all duration-200 hover:w-32"
               onClick={() => document?.getElementById("file-upload")?.click()}
             >
-              <Plus className="absolute left-[9px] h-6 w-6" />
-              <span className="whitespace-nowrap pl-7 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                Attachments
-              </span>
+              <Plus className="h-4 w-4 mr-1" />
+              Attachments
             </Button>
             <input
               id="file-upload"
