@@ -117,8 +117,8 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
                 >
                   {emailData?.sender?.name
                     ?.split(" ")
-                    .map(chunk => chunk[0]?.toUpperCase())
-                    .filter(char => char?.match(/[A-Z]/))
+                    .map((chunk) => chunk[0]?.toUpperCase())
+                    .filter((char) => char?.match(/[A-Z]/))
                     .slice(0, 2)
                     .join("")}
                 </AvatarFallback>
@@ -253,7 +253,7 @@ const MailDisplay = ({ emailData, isMuted, index, demo }: Props) => {
           )}
         >
           <div className="min-h-0 overflow-hidden">
-            {emailData?.attachments ? (
+            {emailData?.attachments && emailData?.attachments.length > 0 ? (
               <>
                 <AttachmentsAccordion
                   attachments={emailData?.attachments}

@@ -1,6 +1,7 @@
 import { InitialThread, ParsedMessage } from "@/types";
 
 export interface MailManager {
+    getAttachment(messageId: string, attachmentId: string): Promise<string>;
     get(id: string): Promise<ParsedMessage[] | undefined>;
     create(data: any): Promise<any>;
     delete(id: string): Promise<any>;

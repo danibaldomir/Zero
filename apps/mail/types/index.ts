@@ -81,6 +81,7 @@ export interface Attachment {
   filename: string;
   mimeType: string;
   size: number;
+  body: string;
   // TODO: Fix typing
   headers: any;
 }
