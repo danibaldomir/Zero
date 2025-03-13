@@ -302,7 +302,7 @@ export default function Editor({
       <EditorRoot>
         <EditorContent
           immediatelyRender={false}
-          initialContent={initialValue}
+          initialContent={initialValue || defaultEditorContent}
           extensions={extensions}
           className="min-h-96"
           editorProps={{

@@ -34,6 +34,49 @@ const findHtmlBody = (parts: any[]): string => {
   return "";
 };
 
+interface ParsedDraft {
+  id: string;
+  to?: string[];
+  subject?: string;
+  content?: string;
+  rawMessage?: gmail_v1.Schema$Message;
+}
+
+const parseDraft = (draft: gmail_v1.Schema$Draft): ParsedDraft | null => {
+  if (!draft.message) return null;
+
+  const headers = draft.message.payload?.headers || [];
+  const to =
+    headers
+      .find((h) => h.name === "To")
+      ?.value?.split(",")
+      .map((e) => e.trim())
+      .filter(Boolean) || [];
+  const subject = headers.find((h) => h.name === "Subject")?.value;
+
+  let content = "";
+  const payload = draft.message.payload;
+
+  if (payload) {
+    if (payload.parts) {
+      const textPart = payload.parts.find((part) => part.mimeType === "text/plain");
+      if (textPart?.body?.data) {
+        content = fromBinary(textPart.body.data);
+      }
+    } else if (payload.body?.data) {
+      content = fromBinary(payload.body.data);
+    }
+  }
+
+  return {
+    id: draft.id || "",
+    to,
+    subject: subject ? he.decode(subject).trim() : "",
+    content,
+    rawMessage: draft.message,
+  };
+};
+
 export const driver = async (config: IConfig): Promise<MailManager> => {
   const auth = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID as string,
@@ -356,6 +399,99 @@ export const driver = async (config: IConfig): Promise<MailManager> => {
         },
       });
     },
+    getDraft: async (draftId: string) => {
+      try {
+        const res = await gmail.users.drafts.get({
+          userId: "me",
+          id: draftId,
+          format: "full",
+        });
+
+        if (!res.data) {
+          throw new Error("Draft not found");
+        }
+
+        const parsedDraft = parseDraft(res.data);
+        if (!parsedDraft) {
+          throw new Error("Failed to parse draft");
+        }
+
+        return parsedDraft;
+      } catch (error) {
+        console.error("Error loading draft:", error);
+        throw error;
+      }
+    },
+    listDrafts: async (q?: string, maxResults = 20, pageToken?: string) => {
+      const { q: normalizedQ } = normalizeSearch("", q ?? "");
+      const res = await gmail.users.drafts.list({
+        userId: "me",
+        q: normalizedQ ? normalizedQ : undefined,
+        maxResults,
+        pageToken: pageToken ? pageToken : undefined,
+      });
+
+      const drafts = await Promise.all(
+        (res.data.drafts || [])
+          .map(async (draft) => {
+            if (!draft.id) return null;
+            const msg = await gmail.users.drafts.get({
+              userId: "me",
+              id: draft.id,
+            });
+            const message = msg.data.message;
+            const parsed = parse(message as any);
+            return {
+              ...parsed,
+              id: draft.id,
+              threadId: draft.message?.id,
+            };
+          })
+          .filter((msg): msg is NonNullable<typeof msg> => msg !== null),
+      );
+
+      return { ...res.data, drafts } as any;
+    },
+    createDraft: async (data: any) => {
+      const mimeMessage = [
+        `From: me`,
+        `To: ${data.to}`,
+        `Subject: ${data.subject}`,
+        "Content-Type: text/html; charset=utf-8",
+        "",
+        data.message,
+      ].join("\n");
+
+      const encodedMessage = Buffer.from(mimeMessage)
+        .toString("base64")
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+
+      const requestBody = {
+        message: {
+          raw: encodedMessage,
+        },
+      };
+
+      let res;
+
+      if (data.id) {
+        res = await gmail.users.drafts.update({
+          userId: "me",
+          id: data.id,
+          requestBody,
+        });
+      } else {
+        res = await gmail.users.drafts.create({
+          userId: "me",
+          requestBody,
+        });
+      }
+
+      return res.data;
+    },
   };
+
   return manager;
 };
