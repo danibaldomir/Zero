@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { emailProviders } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
+import { useTranslations } from "next-intl";
 import { Trash, Plus } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -27,22 +28,26 @@ export default function ConnectionsPage() {
   const { refetch } = useSession();
   const { data: connections, mutate, isLoading } = useConnections();
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+  const t = useTranslations();
 
   const disconnectAccount = async (connectionId: string) => {
     try {
       await deleteConnection(connectionId);
-      toast.success("Account disconnected successfully");
+      toast.success(t("pages.settings.connections.disconnectSuccess"));
       mutate();
       refetch();
     } catch (error) {
       console.error("Error disconnecting account:", error);
-      toast.error("Failed to disconnect account");
+      toast.error(t("pages.settings.connections.disconnectError"));
     }
   };
 
   return (
     <div className="grid gap-6">
-      <SettingsCard title="Email Connections" description="Connect your email accounts to Zero.">
+      <SettingsCard
+        title={t("pages.settings.connections.title")}
+        description={t("pages.settings.connections.description")}
+      >
         <div className="space-y-6">
           {isLoading ? (
             <div className="grid gap-4 md:grid-cols-3">
@@ -130,17 +135,21 @@ export default function ConnectionsPage() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Disconnect Email Account</DialogTitle>
+                        <DialogTitle>{t("pages.settings.connections.disconnectTitle")}</DialogTitle>
                         <DialogDescription>
-                          Are you sure you want to disconnect this email?
+                          {t("pages.settings.connections.disconnectDescription")}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex justify-end gap-4">
                         <DialogClose asChild>
-                          <Button variant="outline">Cancel</Button>
+                          <Button variant="outline">
+                            {t("pages.settings.connections.cancel")}
+                          </Button>
                         </DialogClose>
                         <DialogClose asChild>
-                          <Button onClick={() => disconnectAccount(connection.id)}>Remove</Button>
+                          <Button onClick={() => disconnectAccount(connection.id)}>
+                            {t("pages.settings.connections.remove")}
+                          </Button>
                         </DialogClose>
                       </div>
                     </DialogContent>
@@ -150,15 +159,15 @@ export default function ConnectionsPage() {
             </div>
           ) : null}
 
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-start">
             <AddConnectionDialog>
               <Button
                 variant="outline"
-                className="group relative w-9 overflow-hidden transition-all duration-200 hover:w-40"
+                className="group relative w-9 overflow-hidden transition-all duration-200 hover:w-full sm:hover:w-[32.5%]"
               >
                 <Plus className="absolute left-2 h-4 w-4" />
                 <span className="whitespace-nowrap pl-7 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  Add Connection
+                  {t("pages.settings.connections.addEmail")}
                 </span>
               </Button>
             </AddConnectionDialog>

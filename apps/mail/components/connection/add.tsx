@@ -8,6 +8,7 @@ import {
 } from "../ui/dialog";
 import { emailProviders } from "@/lib/constants";
 import { Plus, UserPlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -21,26 +22,28 @@ export const AddConnectionDialog = ({
   className?: string;
   onOpenChange?: (open: boolean) => void;
 }) => {
+  const t = useTranslations();
+
   return (
     <Dialog onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button
-          size={"dropdownItem"}
-          variant={"dropdownItem"}
-          className={cn("w-full justify-start gap-2", className)}
-        >
-          {children || (
-            <>
-              <UserPlus size={16} strokeWidth={2} className="opacity-60" aria-hidden="true" />
-              <p className="text-[13px] opacity-60">Add email</p>
-            </>
-          )}
-        </Button>
+        {children || (
+          <Button
+            size={"dropdownItem"}
+            variant={"dropdownItem"}
+            className={cn("w-full justify-start gap-2", className)}
+          >
+            <UserPlus size={16} strokeWidth={2} className="opacity-60" aria-hidden="true" />
+            <p className="text-[13px] opacity-60">{t("pages.settings.connections.addEmail")}</p>
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Connect Email</DialogTitle>
-          <DialogDescription>Select an email provider to connect</DialogDescription>
+          <DialogTitle>{t("pages.settings.connections.connectEmail")}</DialogTitle>
+          <DialogDescription>
+            {t("pages.settings.connections.connectEmailDescription")}
+          </DialogDescription>
         </DialogHeader>
         <motion.div
           className="mt-4 grid grid-cols-2 gap-4"
@@ -81,7 +84,7 @@ export const AddConnectionDialog = ({
               className="h-24 flex-col items-center justify-center gap-2 border-dashed"
             >
               <Plus className="h-12 w-12" />
-              <span className="text-xs">More Coming Soon</span>
+              <span className="text-xs">{t("pages.settings.connections.moreComingSoon")}</span>
             </Button>
           </motion.div>
         </motion.div>
