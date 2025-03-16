@@ -1,9 +1,9 @@
 "use server";
 
 import { connection, user } from "@zero/db/schema";
+import { type IConnection } from "@/types";
 import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
-import { type IConnection } from "@/types";
 import { auth } from "@/lib/auth";
 import { db } from "@zero/db";
 

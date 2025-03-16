@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { connection, user as _user, account } from "@zero/db/schema";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { getSocialProviders } from "./auth-providers";
 import { customSession } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@zero/db";
-import { getSocialProviders } from "./auth-providers";
 
 // If there is no resend key, it might be a local dev environment
 // In that case, we don't want to send emails and just log them
