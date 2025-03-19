@@ -1,5 +1,5 @@
-"use client";
+'use client';
 
-import ChildRouteLayout from "@/components/childRouteLayout";
+import ChildRouteLayout from '@/components/childRouteLayout';
 
-export default ChildRouteLayout
+export default ChildRouteLayout;
