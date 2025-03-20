@@ -3,8 +3,6 @@ import { connection, user as _user, account, userSettings } from "@zero/db/schem
 import { createAuthMiddleware, customSession } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { customSession } from "better-auth/plugins";
-import { betterAuth, BetterAuthOptions } from "better-auth";
 import { TIMEZONES } from "@/utils/timezones";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
