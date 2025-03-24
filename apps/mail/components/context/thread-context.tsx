@@ -1,51 +1,50 @@
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuShortcut,
-	ContextMenuSub,
-	ContextMenuSubContent,
-	ContextMenuSubTrigger,
-	ContextMenuTrigger,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
 } from '../ui/context-menu';
 import {
-	Archive,
-	ArchiveX,
-	BellOff,
-	Forward,
-	Inbox,
-	MailPlus,
-	Reply,
-	ReplyAll,
-	Tag,
-	Mail,
-	Star,
-	Trash,
+  Archive,
+  ArchiveX,
+  BellOff,
+  Forward,
+  Inbox,
+  MailPlus,
+  Reply,
+  ReplyAll,
+  Tag,
+  Mail,
+  Star,
+  Trash,
 } from 'lucide-react';
+import { moveThreadsTo, ThreadDestination } from '@/lib/thread-actions';
 import { useSearchValue } from '@/hooks/use-search-value';
-import { useParams, useRouter } from 'next/navigation';
 import { useThreads } from '@/hooks/use-threads';
-import { modifyLabels } from '@/actions/mail';
+import { LABELS, FOLDERS } from '@/lib/utils';
 import { useStats } from '@/hooks/use-stats';
+import { useParams } from 'next/navigation';
 import { useMail } from '../mail/use-mail';
-import { useTranslations } from 'use-intl'; // Keep this if localization is needed
+import { useTranslations } from 'use-intl';
 import { type ReactNode } from 'react';
-import { LABELS } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface EmailAction {
-	id: string;
-	label: string | ReactNode;
-	icon?: ReactNode;
-	shortcut?: string;
-	action: () => () => Promise<void>;
-	disabled?: boolean;
-	condition?: () => boolean;
+  id: string;
+  label: string | ReactNode;
+  icon?: ReactNode;
+  shortcut?: string;
+  action: () => () => Promise<void>;
+  disabled?: boolean;
+  condition?: () => boolean;
 }
 
 interface EmailContextMenuProps {
-	children: React.ReactNode;
+	children: ReactNode;
 	emailId: string;
 	threadId?: string;
 	isInbox?: boolean;
@@ -55,44 +54,25 @@ interface EmailContextMenuProps {
 }
 
 export function ThreadContextMenu({
-	children,
-	emailId,
-	threadId = emailId,
-	isInbox = true,
-	isSpam = false,
-	isSent = false,
-	refreshCallback,
+  children,
+  emailId,
+  threadId = emailId,
+  isInbox = true,
+  isSpam = false,
+  isSent = false,
+  refreshCallback,
 }: EmailContextMenuProps) {
-	const { folder } = useParams<{ folder: string }>();
-	const [searchValue] = useSearchValue();
-	const [mail, setMail] = useMail();
-	const { mutate } = useThreads(folder, undefined, searchValue.value, 20);
-	const currentFolder = folder ?? '';
-	const isArchiveFolder = currentFolder === 'archive';
-	const { mutate: mutateStats } = useStats();
-	const t = useTranslations();
+  const { folder } = useParams<{ folder: string }>();
+  const [mail, setMail] = useMail();
+  const { mutate, isLoading, isValidating } = useThreads();
+  const currentFolder = folder ?? '';
+	const isArchiveFolder = currentFolder === FOLDERS.ARCHIVE;
+  const { mutate: mutateStats } = useStats();
+  const t = useTranslations();
 
 	const noopAction = () => async () => {
 		console.log('Action will be implemented later');
 	};
-
-	// const handleArchive = () => async () => {
-	//     try {
-	//         const targetId = threadId ? `thread:${threadId}` : emailId;
-	//         console.log(`🗃️ EmailContextMenu: Archiving ${threadId ? 'thread' : 'email'}: ${targetId}`);
-
-	//         const success = await archiveMail(targetId);
-	//         if (success) {
-	//             toast.success(`${threadId ? 'Email' : 'Thread'} archived`);
-	//             if (refreshCallback) refreshCallback();
-	//         } else {
-	//             throw new Error(`Failed to archive ${threadId ? 'email' : 'thread'}`);
-	//         }
-	//     } catch (error) {
-	//         console.error(`Error archiving ${threadId ? 'email' : 'thread'}:`, error);
-	//         toast.error(`Error archiving ${threadId ? 'email' : 'thread'}`);
-	//     }
-	// };
 
 	const handleMove = (from: string, to: string) => async () => {
 		try {
@@ -102,21 +82,20 @@ export function ThreadContextMenu({
 			} else {
 				targets = [threadId ? `thread:${threadId}` : emailId];
 			}
-			return toast.promise(
-				modifyLabels({
-					threadId: targets,
-					addLabels: to ? [to] : [],
-					removeLabels: from ? [from] : [],
-				}).then(async () => {
-					await mutate().then(() => mutateStats());
-					return setMail({ ...mail, bulkSelected: [] });
-				}),
-				{
-					loading: t('common.mail.moving'),
-					success: () => t('common.mail.moved'),
-					error: t('common.mail.errorMoving'),
-				},
-			);
+
+			let destination: ThreadDestination = null;
+			if (to === LABELS.INBOX) destination = FOLDERS.INBOX;
+			else if (to === LABELS.SPAM) destination = FOLDERS.SPAM;
+			else if (from && !to) destination = FOLDERS.ARCHIVE;
+
+			return moveThreadsTo({
+				threadIds: targets,
+				currentFolder: currentFolder,
+				destination
+			}).then(async () => {
+        await Promise.all([mutate(), mutateStats()])
+        setMail({ ...mail, bulkSelected: [] });
+      });
 		} catch (error) {
 			console.error(`Error moving ${threadId ? 'email' : 'thread'}`, error);
 		}
@@ -125,7 +104,7 @@ export function ThreadContextMenu({
 	const primaryActions: EmailAction[] = [
 		{
 			id: 'reply',
-			label: 'Reply',
+			label: t('common.mail.reply'),
 			icon: <Reply className="mr-2.5 h-4 w-4" />,
 			shortcut: 'R',
 			action: noopAction,
@@ -133,7 +112,7 @@ export function ThreadContextMenu({
 		},
 		{
 			id: 'reply-all',
-			label: 'Reply All',
+			label: t('common.mail.replyAll'),
 			icon: <ReplyAll className="mr-2.5 h-4 w-4" />,
 			shortcut: '⇧R',
 			action: noopAction,
@@ -141,7 +120,7 @@ export function ThreadContextMenu({
 		},
 		{
 			id: 'forward',
-			label: 'Forward',
+			label: t('common.mail.forward'),
 			icon: <Forward className="mr-2.5 h-4 w-4" />,
 			shortcut: 'F',
 			action: noopAction,
@@ -149,144 +128,144 @@ export function ThreadContextMenu({
 		},
 	];
 
-	const getActions = () => {
-		if (isSpam) {
-			return [
-				{
-					id: 'move-to-inbox',
-					label: t('common.mail.moveToInbox'),
-					icon: <Inbox className="mr-2.5 h-4 w-4" />,
-					action: handleMove(LABELS.SPAM, LABELS.INBOX),
-					disabled: false,
-				},
-			];
-		}
+  const getActions = () => {
+    if (isSpam) {
+      return [
+        {
+          id: 'move-to-inbox',
+          label: t('common.mail.moveToInbox'),
+          icon: <Inbox className="mr-2.5 h-4 w-4" />,
+          action: handleMove(LABELS.SPAM, LABELS.INBOX),
+          disabled: false,
+        },
+      ];
+    }
 
-		if (isArchiveFolder || !isInbox) {
-			return [
-				{
-					id: 'move-to-inbox',
-					label: t('common.mail.unarchive'),
-					icon: <Inbox className="mr-2.5 h-4 w-4" />,
-					action: handleMove('', LABELS.INBOX),
-					disabled: false,
-				},
-			];
-		}
+    if (isArchiveFolder || !isInbox) {
+      return [
+        {
+          id: 'move-to-inbox',
+          label: t('common.mail.unarchive'),
+          icon: <Inbox className="mr-2.5 h-4 w-4" />,
+          action: handleMove('', LABELS.INBOX),
+          disabled: false,
+        },
+      ];
+    }
 
-		if (isSent) {
-			return [
-				{
-					id: 'archive',
-					label: t('common.mail.archive'),
-					icon: <Archive className="mr-2.5 h-4 w-4" />,
-					shortcut: 'E',
-					action: handleMove(LABELS.SENT, ''),
-					disabled: false,
-				},
-			];
-		}
+    if (isSent) {
+      return [
+        {
+          id: 'archive',
+          label: t('common.mail.archive'),
+          icon: <Archive className="mr-2.5 h-4 w-4" />,
+          shortcut: 'E',
+          action: handleMove(LABELS.SENT, ''),
+          disabled: false,
+        },
+      ];
+    }
 
-		return [
-			{
-				id: 'archive',
-				label: t('common.mail.archive'),
-				icon: <Archive className="mr-2.5 h-4 w-4" />,
-				shortcut: 'E',
-				action: handleMove(LABELS.INBOX, ''),
-				disabled: false,
-			},
-			{
-				id: 'move-to-spam',
-				label: t('common.mail.moveToSpam'),
-				icon: <ArchiveX className="mr-2.5 h-4 w-4" />,
-				action: handleMove(LABELS.INBOX, LABELS.SPAM),
-				disabled: !isInbox,
-			},
-		];
-	};
+    return [
+      {
+        id: 'archive',
+        label: t('common.mail.archive'),
+        icon: <Archive className="mr-2.5 h-4 w-4" />,
+        shortcut: 'E',
+        action: handleMove(LABELS.INBOX, ''),
+        disabled: false,
+      },
+      {
+        id: 'move-to-spam',
+        label: t('common.mail.moveToSpam'),
+        icon: <ArchiveX className="mr-2.5 h-4 w-4" />,
+        action: handleMove(LABELS.INBOX, LABELS.SPAM),
+        disabled: !isInbox,
+      },
+    ];
+  };
 
-	const moveActions: EmailAction[] = [
-		{
-			id: 'move-to-trash',
-			label: t('common.mail.moveToTrash'),
-			icon: <Trash className="mr-2.5 h-4 w-4" />,
-			action: noopAction,
-			disabled: true, // TODO: Move to trash functionality to be implemented
-		},
-	];
+  const moveActions: EmailAction[] = [
+    {
+      id: 'move-to-trash',
+      label: t('common.mail.moveToTrash'),
+      icon: <Trash className="mr-2.5 h-4 w-4" />,
+      action: noopAction,
+      disabled: true, // TODO: Move to trash functionality to be implemented
+    },
+  ];
 
-	const otherActions: EmailAction[] = [
-		{
-			id: 'mark-unread',
-			label: t('common.mail.markAsUnread'),
-			icon: <Mail className="mr-2.5 h-4 w-4" />,
-			shortcut: 'U',
-			action: noopAction,
-			disabled: true, // TODO: Mark as unread functionality to be implemented
-		},
-		{
-			id: 'star',
-			label: t('common.mail.addStar'),
-			icon: <Star className="mr-2.5 h-4 w-4" />,
-			shortcut: 'S',
-			action: noopAction,
-			disabled: true, // TODO: Star functionality to be implemented
-		},
-		{
-			id: 'mute',
-			label: t('common.mail.muteThread'),
-			icon: <BellOff className="mr-2.5 h-4 w-4" />,
-			action: noopAction,
-			disabled: true, // TODO: Mute functionality to be implemented
-		},
-	];
+  const otherActions: EmailAction[] = [
+    {
+      id: 'mark-unread',
+      label: t('common.mail.markAsUnread'),
+      icon: <Mail className="mr-2.5 h-4 w-4" />,
+      shortcut: 'U',
+      action: noopAction,
+      disabled: true, // TODO: Mark as unread functionality to be implemented
+    },
+    {
+      id: 'star',
+      label: t('common.mail.addStar'),
+      icon: <Star className="mr-2.5 h-4 w-4" />,
+      shortcut: 'S',
+      action: noopAction,
+      disabled: true, // TODO: Star functionality to be implemented
+    },
+    {
+      id: 'mute',
+      label: t('common.mail.muteThread'),
+      icon: <BellOff className="mr-2.5 h-4 w-4" />,
+      action: noopAction,
+      disabled: true, // TODO: Mute functionality to be implemented
+    },
+  ];
 
-	const renderAction = (action: EmailAction) => {
-		return (
-			<ContextMenuItem
-				key={action.id}
-				onClick={() => action.action()}
-				disabled={action.disabled}
-				className="font-normal"
-			>
-				{action.icon}
-				{action.label}
-				{action.shortcut && <ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>}
-			</ContextMenuItem>
-		);
-	};
+  const renderAction = (action: EmailAction) => {
+    return (
+      <ContextMenuItem
+        key={action.id}
+        onClick={() => action.action()}
+        disabled={action.disabled}
+        className="font-normal"
+      >
+        {action.icon}
+        {action.label}
+        {action.shortcut && <ContextMenuShortcut>{action.shortcut}</ContextMenuShortcut>}
+      </ContextMenuItem>
+    );
+  };
 
 	return (
 		<ContextMenu>
-			<ContextMenuTrigger className="w-full">{children}</ContextMenuTrigger>
-			<ContextMenuContent className="w-56">
+			<ContextMenuTrigger disabled={isLoading || isValidating} className="w-full">{children}</ContextMenuTrigger>
+			<ContextMenuContent className="w-56" onContextMenu={(e) => e.preventDefault()}>
 				{primaryActions.map(renderAction)}
 
-				<ContextMenuSeparator />
+        <ContextMenuSeparator />
 
-				{getActions().map(renderAction as any)}
-				{moveActions.filter((action) => action.id !== 'move-to-spam').map(renderAction)}
+        {getActions().map(renderAction as any)}
+        {moveActions.filter((action) => action.id !== 'move-to-spam').map(renderAction)}
 
-				<ContextMenuSeparator />
+        <ContextMenuSeparator />
 
-				{otherActions.map(renderAction)}
+        {otherActions.map(renderAction)}
 
-				<ContextMenuSeparator />
+        <ContextMenuSeparator />
 
 				<ContextMenuSub>
 					<ContextMenuSubTrigger className="font-normal">
 						<Tag className="mr-2.5 h-4 w-4" />
-						Labels
+						{t('common.mail.labels')}
 					</ContextMenuSubTrigger>
 					<ContextMenuSubContent className="w-48">
 						<ContextMenuItem className="font-normal">
 							<MailPlus className="mr-2.5 h-4 w-4" />
-							Create New Label
+							{t('common.mail.createNewLabel')}
 						</ContextMenuItem>
 						<ContextMenuSeparator />
 						<ContextMenuItem disabled className="text-muted-foreground italic">
-							No labels available
+							{t('common.mail.noLabelsAvailable')}
 						</ContextMenuItem>
 					</ContextMenuSubContent>
 				</ContextMenuSub>
