@@ -15,10 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { saveUserSettings, UserSettings } from '@/actions/settings';
 import { SettingsCard } from '@/components/settings/settings-card';
-import { availableLocales, locales, Locale } from '@/i18n/config';
-import { useTranslations, useLocale } from 'next-intl';
+import { getBrowserTimezone, TIMEZONES } from '@/utils/timezones';
+import { availableLocales, Locale, locales } from '@/i18n/config';
+import { useLocale, useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSettings } from '@/hooks/use-settings';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Globe, Clock } from 'lucide-react';
