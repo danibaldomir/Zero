@@ -159,33 +159,45 @@ const Thread = memo(
               <AvatarFallback className="rounded-full">{message.sender.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex w-full justify-between">
-              <div>
-                <div className="flex flex-row items-center">
-                  <p
-                    className={cn(
-                      message.unread && !isMailSelected ? 'font-bold' : 'font-medium',
-                      'text-md flex items-baseline gap-1 group-hover:opacity-100',
-                    )}
-                  >
-                    <span className={cn(threadIdParam && 'max-w-[120px] truncate')}>
-                      {highlightText(message.sender.name, searchValue.highlight)}
-                    </span>{' '}
-                    {message.unread && !isMailSelected ? (
-                      <span className="size-2 rounded bg-[#006FFE]" />
+              <div className="w-full">
+                <div className="flex w-full flex-row items-center justify-between">
+                  <div className="flex flex-row items-center">
+                    <p
+                      className={cn(
+                        message.unread && !isMailSelected ? 'font-bold' : 'font-medium',
+                        'text-md flex items-baseline gap-1 group-hover:opacity-100',
+                      )}
+                    >
+                      <span className={cn(threadIdParam && 'max-w-[120px] truncate')}>
+                        {highlightText(message.sender.name, searchValue.highlight)}
+                      </span>{' '}
+                      {message.unread && !isMailSelected ? (
+                        <span className="size-2 rounded bg-[#006FFE]" />
+                      ) : null}
+                    </p>
+                    <MailLabels labels={threadLabels} />
+                    {message.totalReplies > 1 ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="rounded-md border border-dotted px-[5px] py-[1px] text-xs opacity-70">
+                            {message.totalReplies}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="px-1 py-0 text-xs">
+                          {t('common.mail.replies', { count: message.totalReplies })}
+                        </TooltipContent>
+                      </Tooltip>
                     ) : null}
-                  </p>
-                  <MailLabels labels={threadLabels} />
-                  {message.totalReplies > 1 ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="rounded-md border border-dotted px-[5px] py-[1px] text-xs opacity-70">
-                          {message.totalReplies}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="px-1 py-0 text-xs">
-                        {t('common.mail.replies', { count: message.totalReplies })}
-                      </TooltipContent>
-                    </Tooltip>
+                  </div>
+                  {message.receivedOn ? (
+                    <p
+                      className={cn(
+                        'text-nowrap text-xs font-normal opacity-70 transition-opacity group-hover:opacity-100',
+                        isMailSelected && 'opacity-100',
+                      )}
+                    >
+                      {formatDate(message.receivedOn.split('.')[0] || '')}
+                    </p>
                   ) : null}
                 </div>
                 <p
@@ -198,16 +210,6 @@ const Thread = memo(
                   {highlightText(message.subject, searchValue.highlight)}
                 </p>
               </div>
-              {message.receivedOn ? (
-                <p
-                  className={cn(
-                    'text-xs font-normal opacity-70 transition-opacity group-hover:opacity-100',
-                    isMailSelected && 'opacity-100',
-                  )}
-                >
-                  {formatDate(message.receivedOn.split('.')[0] || '')}
-                </p>
-              ) : null}
             </div>
           </div>
         </div>
