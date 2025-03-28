@@ -161,7 +161,7 @@ const Thread = memo(
             <div className="flex w-full justify-between">
               <div className="w-full">
                 <div className="flex w-full flex-row items-center justify-between">
-                  <div className="flex flex-row items-center">
+                  <div className="flex flex-row items-center gap-1">
                     <p
                       className={cn(
                         message.unread && !isMailSelected ? 'font-bold' : 'font-medium',
