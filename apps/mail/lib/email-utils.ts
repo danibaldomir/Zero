@@ -1,7 +1,7 @@
-import {parseFrom as _parseFrom, parseAddressList as _parseAddressList} from "email-addresses"
-import { EMAIL_HTML_TEMPLATE } from "./constants";
-import Color from "color";
-import { Sender } from "@/types";
+import { parseFrom as _parseFrom, parseAddressList as _parseAddressList } from 'email-addresses';
+import { EMAIL_HTML_TEMPLATE } from './constants';
+import { Sender } from '@/types';
+import Color from 'color';
 
 export const template = (html: string, imagesEnabled: boolean = false) => {
   if (typeof DOMParser === 'undefined') return html;
@@ -17,7 +17,9 @@ export const template = (html: string, imagesEnabled: boolean = false) => {
   // Add CSP meta tag based on imagesEnabled state
   const cspMeta = template.createElement('meta');
   cspMeta.httpEquiv = 'Content-Security-Policy';
-  cspMeta.content = imagesEnabled ? "default-src 'self'; img-src * data: blob: 'unsafe-inline'; style-src 'unsafe-inline' *; font-src *" : "default-src 'self'; img-src 'none'; style-src 'unsafe-inline' *; font-src *";
+  cspMeta.content = imagesEnabled
+    ? "default-src 'self'; img-src * data: blob: 'unsafe-inline'; style-src 'unsafe-inline' *; font-src *"
+    : "default-src 'self'; img-src data:; style-src 'unsafe-inline' *; font-src *";
   template.head.appendChild(cspMeta);
   template.body.innerHTML = doc.body.innerHTML;
   template.body.style.backgroundColor = getComputedStyle(document.body).getPropertyValue(
@@ -61,7 +63,11 @@ export const fixNonReadableColors = (rootElement: HTMLElement, minContrast = 3.5
     if (style.display === 'none' || style.visibility === 'hidden') continue;
 
     // Skip if the color is a CSS variable or special value
-    if (style.color.startsWith('var(') || style.color === 'transparent' || style.color === 'inherit') {
+    if (
+      style.color.startsWith('var(') ||
+      style.color === 'transparent' ||
+      style.color === 'inherit'
+    ) {
       continue;
     }
 
@@ -164,7 +170,6 @@ export const parseFrom = (fromHeader: string) => {
   const firstSender = parsedSender[0];
   if (!firstSender) return FALLBACK_SENDER;
 
-
   if (firstSender.type === 'group') {
     const name = firstSender.name || FALLBACK_SENDER.name;
     const firstAddress = firstSender.addresses?.[0]?.address;
@@ -180,25 +185,25 @@ export const parseFrom = (fromHeader: string) => {
 };
 
 export const parseAddressList = (header: string): Sender[] => {
-  const parsedAddressList = _parseAddressList(header)
-  if (!parsedAddressList) return [FALLBACK_SENDER]
+  const parsedAddressList = _parseAddressList(header);
+  if (!parsedAddressList) return [FALLBACK_SENDER];
 
-  return parsedAddressList?.flatMap(address => {
-    if (address.type === "group") {
-      return (address.addresses || []).flatMap(address => ({
+  return parsedAddressList?.flatMap((address) => {
+    if (address.type === 'group') {
+      return (address.addresses || []).flatMap((address) => ({
         name: address.name || FALLBACK_SENDER.name,
-        email: address.address || FALLBACK_SENDER.email
-      }))
+        email: address.address || FALLBACK_SENDER.email,
+      }));
     }
 
     return {
       name: address.name || FALLBACK_SENDER.name,
-      email: address.address || FALLBACK_SENDER.email
-    }
-  })
-}
+      email: address.address || FALLBACK_SENDER.email,
+    };
+  });
+};
 
-export const wasSentWithTLS = (receivedHeaders: string[])  => {
+export const wasSentWithTLS = (receivedHeaders: string[]) => {
   const tlsIndicators = [
     /using\s+TLS/i,
     /with\s+ESMTPS/i,
