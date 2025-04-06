@@ -3,12 +3,22 @@ import { EMAIL_HTML_TEMPLATE } from "./constants";
 import Color from "color";
 import { Sender } from "@/types";
 
-export const template = (html: string) => {
+export const template = (html: string, imagesEnabled: boolean = false) => {
   if (typeof DOMParser === 'undefined') return html;
   const htmlParser = new DOMParser();
   const doc = htmlParser.parseFromString(html, 'text/html');
   const template = htmlParser.parseFromString(EMAIL_HTML_TEMPLATE, 'text/html');
-  Array.from(doc.head.children).forEach((child) => template.head.appendChild(child));
+  Array.from(doc.head.children).forEach((child) => {
+    // Skip any existing CSP meta tags
+    if (child instanceof HTMLMetaElement && child.httpEquiv === 'Content-Security-Policy') return;
+    template.head.appendChild(child);
+  });
+
+  // Add CSP meta tag based on imagesEnabled state
+  const cspMeta = template.createElement('meta');
+  cspMeta.httpEquiv = 'Content-Security-Policy';
+  cspMeta.content = imagesEnabled ? "default-src 'self'; img-src * data: blob: 'unsafe-inline'; style-src 'unsafe-inline' *; font-src *" : "default-src 'self'; img-src 'none'; style-src 'unsafe-inline' *; font-src *";
+  template.head.appendChild(cspMeta);
   template.body.innerHTML = doc.body.innerHTML;
   template.body.style.backgroundColor = getComputedStyle(document.body).getPropertyValue(
     'background-color',
