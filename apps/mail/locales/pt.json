@@ -398,7 +398,11 @@
           "viewEmailDetails": "Ver os detalhes do E-Mail",
           "goToDrafts": "Ir para Rascunhos",
           "expandEmailView": "Expandir Visualização do E-mail",
-          "helpWithShortcuts": "Ajuda com atalhos"
+          "helpWithShortcuts": "Ajuda com atalhos",
+          "recordHotkey": "Gravar atalho",
+          "pressKeys": "Pressionar teclas",
+          "releaseKeys": "Soltar teclas",
+          "selectAll": "Selecionar tudo"
         }
       }
     },

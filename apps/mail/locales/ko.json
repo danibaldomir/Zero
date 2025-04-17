@@ -398,7 +398,11 @@
           "viewEmailDetails": "이메일 세부 사항 보기",
           "goToDrafts": "임시보관함으로 이동",
           "expandEmailView": "이메일 뷰 확장",
-          "helpWithShortcuts": "단축키 도움말"
+          "helpWithShortcuts": "단축키 도움말",
+          "recordHotkey": "단축키 기록",
+          "pressKeys": "키 누르기",
+          "releaseKeys": "키 놓기",
+          "selectAll": "모두 선택"
         }
       }
     },

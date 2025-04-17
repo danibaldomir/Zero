@@ -398,7 +398,11 @@
           "viewEmailDetails": "Просмотреть детали письма",
           "goToDrafts": "Перейти к черновикам",
           "expandEmailView": "Развернуть письмо",
-          "helpWithShortcuts": "Помощь с горячими клавишами"
+          "helpWithShortcuts": "Помощь с горячими клавишами",
+          "recordHotkey": "Записать горячую клавишу",
+          "pressKeys": "Нажмите клавиши",
+          "releaseKeys": "Отпустите клавиши",
+          "selectAll": "Выбрать все"
         }
       }
     },

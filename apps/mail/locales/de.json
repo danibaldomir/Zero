@@ -398,7 +398,11 @@
           "viewEmailDetails": "E-Mail-Details anzeigen",
           "goToDrafts": "Zu den Entwürfen",
           "expandEmailView": "E-Mail-Ansicht vergrößern",
-          "helpWithShortcuts": "Hilfe mit Verknüpfungen"
+          "helpWithShortcuts": "Hilfe mit Verknüpfungen",
+          "recordHotkey": "Tastenkombination aufnehmen",
+          "pressKeys": "Tasten drücken",
+          "releaseKeys": "Tasten loslassen",
+          "selectAll": "Alles auswählen"
         }
       }
     },

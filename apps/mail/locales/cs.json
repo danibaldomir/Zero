@@ -398,7 +398,11 @@
           "viewEmailDetails": "Zobrazit detaily emailu",
           "goToDrafts": "Přejít do Konceptů",
           "expandEmailView": "Rozbalit zobrazení emailu",
-          "helpWithShortcuts": "Nápověda se zkratkami"
+          "helpWithShortcuts": "Nápověda se zkratkami",
+          "recordHotkey": "Nahrát klávesovou zkratku",
+          "pressKeys": "Stiskněte klávesy",
+          "releaseKeys": "Uvolněte klávesy",
+          "selectAll": "Vybrat vše"
         }
       }
     },

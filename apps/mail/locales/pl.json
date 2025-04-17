@@ -398,7 +398,11 @@
           "viewEmailDetails": "Zobacz szczegóły e-maila",
           "goToDrafts": "Przejdź do wersji roboczych",
           "expandEmailView": "Rozwiń widok e-maila",
-          "helpWithShortcuts": "Pomoc ze skrótami"
+          "helpWithShortcuts": "Pomoc ze skrótami",
+          "recordHotkey": "Nagraj skrót klawiszowy",
+          "pressKeys": "Naciśnij klawisze",
+          "releaseKeys": "Puść klawisze",
+          "selectAll": "Zaznacz wszystko"
         }
       }
     },

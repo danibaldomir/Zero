@@ -398,7 +398,11 @@
           "viewEmailDetails": "Ver detalles de email",
           "goToDrafts": "Ir a la carpeta de borradores",
           "expandEmailView": "Expandir vista de email",
-          "helpWithShortcuts": "Ayuda con accesos directos"
+          "helpWithShortcuts": "Ayuda con accesos directos",
+          "recordHotkey": "Grabar atajo",
+          "pressKeys": "Pulsar teclas",
+          "releaseKeys": "Soltar teclas",
+          "selectAll": "Seleccionar todo"
         }
       }
     },

@@ -398,7 +398,11 @@
           "viewEmailDetails": "E-posta Detaylarını Görüntüle",
           "goToDrafts": "Taslaklara Git",
           "expandEmailView": "E-posta Görünümünü Genişlet",
-          "helpWithShortcuts": "Kısayollar Hakkında Yardım"
+          "helpWithShortcuts": "Kısayollar Hakkında Yardım",
+          "recordHotkey": "Kısayol Tuşu Kaydet",
+          "pressKeys": "Tuşlara bas",
+          "releaseKeys": "Tuşları bırak",
+          "selectAll": "Tümünü Seç"
         }
       }
     },

@@ -398,7 +398,11 @@
           "viewEmailDetails": "E-mail részletek megtekintése",
           "goToDrafts": "Ugrás a piszkozatokhoz",
           "expandEmailView": "E-mail nézet kibontása",
-          "helpWithShortcuts": "Segítség a gyorsbillentyűkhöz"
+          "helpWithShortcuts": "Segítség a gyorsbillentyűkhöz",
+          "recordHotkey": "Gyorsbillentyű rögzítése",
+          "pressKeys": "Billentyűk lenyomása",
+          "releaseKeys": "Billentyűk felengedése",
+          "selectAll": "Összes kijelölése"
         }
       }
     },

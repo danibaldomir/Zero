@@ -398,7 +398,11 @@
           "viewEmailDetails": "ईमेल विवरण देखें",
           "goToDrafts": "ड्राफ्ट पर जाएं",
           "expandEmailView": "ईमेल व्यू विस्तारित करें",
-          "helpWithShortcuts": "शॉर्टकट से मदद करें"
+          "helpWithShortcuts": "शॉर्टकट से मदद करें",
+          "recordHotkey": "हॉटकी रिकॉर्ड करें",
+          "pressKeys": "कुंजियाँ दबाएँ",
+          "releaseKeys": "कुंजियाँ छोड़ें",
+          "selectAll": "सभी चुनें"
         }
       }
     },

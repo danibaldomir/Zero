@@ -398,7 +398,11 @@
           "viewEmailDetails": "メール詳細を表示",
           "goToDrafts": "下書きを開く",
           "expandEmailView": "メールビューを展開",
-          "helpWithShortcuts": "ショートカットのヘルプ"
+          "helpWithShortcuts": "ショートカットのヘルプ",
+          "recordHotkey": "ホットキーを記録",
+          "pressKeys": "キーを押す",
+          "releaseKeys": "キーを離す",
+          "selectAll": "すべて選択"
         }
       }
     },

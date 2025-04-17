@@ -398,7 +398,11 @@
           "viewEmailDetails": "Skatīt e-pasta detaļas",
           "goToDrafts": "Doties uz Melnrakstiem",
           "expandEmailView": "Izvērst e-pasta skatu",
-          "helpWithShortcuts": "Tastatūras īsceļu palīdzība"
+          "helpWithShortcuts": "Tastatūras īsceļu palīdzība",
+          "recordHotkey": "Ierakstīt karstumtaustiņu",
+          "pressKeys": "Nospiest taustiņus",
+          "releaseKeys": "Atlaist taustiņus",
+          "selectAll": "Atlasīt visu"
         }
       }
     },

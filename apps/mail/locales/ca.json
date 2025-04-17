@@ -398,7 +398,11 @@
           "viewEmailDetails": "Veure els detalls del correu",
           "goToDrafts": "Anar a Esborranys",
           "expandEmailView": "Expandir la vista del correu.",
-          "helpWithShortcuts": "Ajuda amb les dreceres"
+          "helpWithShortcuts": "Ajuda amb les dreceres",
+          "recordHotkey": "Enregistrar drecera",
+          "pressKeys": "Prem les tecles",
+          "releaseKeys": "Deixa anar les tecles",
+          "selectAll": "Selecciona-ho tot"
         }
       }
     },

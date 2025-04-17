@@ -339,6 +339,10 @@ checksums:
     pages/settings/shortcuts/actions/goToDrafts: dfa22fb17b8fa3a3d5672505d104e18c
     pages/settings/shortcuts/actions/expandEmailView: ad31f53032e788ee0e30b14f484a6ec3
     pages/settings/shortcuts/actions/helpWithShortcuts: f8b89d2e465e3a93ff9c5397a114a094
+    pages/settings/shortcuts/actions/recordHotkey: ae6d389f2e9a27e68b34349658df365b
+    pages/settings/shortcuts/actions/pressKeys: c000cad4c6e6b701c9437998d6726ebf
+    pages/settings/shortcuts/actions/releaseKeys: dfa63857eb8a9b8486eacb589b66591b
+    pages/settings/shortcuts/actions/selectAll: ef9e1f8aaf1fbbdf868934209c85aea2
     pages/createEmail/invalidEmail: b2d9f25626f2d15c7c63e0281bccc247
     pages/createEmail/body: e88eb1ea71f5ef886aa43ea6ba292d87
     pages/createEmail/example: ff2b301b819e5067ce63d236731e50c2

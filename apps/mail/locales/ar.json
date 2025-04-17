@@ -398,7 +398,11 @@
           "viewEmailDetails": "عرض تفاصيل البريد الإلكتروني",
           "goToDrafts": "الانتقال إلى المسودات",
           "expandEmailView": "توسيع عرض البريد الإلكتروني",
-          "helpWithShortcuts": "المساعدة في اختصارات لوحة المفاتيح"
+          "helpWithShortcuts": "المساعدة في اختصارات لوحة المفاتيح",
+          "recordHotkey": "تسجيل مفتاح الاختصار",
+          "pressKeys": "اضغط المفاتيح",
+          "releaseKeys": "حرر المفاتيح",
+          "selectAll": "تحديد الكل"
         }
       }
     },
